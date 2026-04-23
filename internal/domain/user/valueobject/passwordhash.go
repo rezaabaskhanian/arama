@@ -11,6 +11,7 @@ type Password struct {
 }
 
 func NewPassword(plain string) (Password, error) {
+
 	if len(plain) < 6 {
 		return Password{}, errors.New("password too short, min 6 chars")
 	}

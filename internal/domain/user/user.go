@@ -43,3 +43,8 @@ func NewUser(nickname string, password string, phone string, role string) (User,
 	}, nil
 
 }
+
+// Method to verify password
+func (u *User) VerifyPassword(plain string) bool {
+	return u.Password.Verify(plain)
+}

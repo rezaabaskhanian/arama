@@ -1,0 +1,20 @@
+
+
+
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: Mental_Health_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: reza_abasi
+      POSTGRES_PASSWORD: r1367R1367
+      POSTGRES_DB: mental_health_db
+    ports:
+      - "5431:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
