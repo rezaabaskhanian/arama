@@ -1,7 +1,64 @@
 package main
 
-import "fmt"
+import (
+	"aramina/internal/config"
+	"aramina/internal/delivery/httpserver"
+	"aramina/internal/repository/postgres"
+	postgresuser "aramina/internal/repository/postgres/user"
+	authservice "aramina/internal/service/auth"
+	userservice "aramina/internal/service/user"
+
+	"time"
+)
+
+const (
+	JwtSignKey = "jwt_token"
+
+	AccessTokenSubject  = "as"
+	RefreshTokenSubject = "rs"
+
+	AccessTokenExpirationDuration  = time.Hour * 24
+	RefreshTokenExpirationDuration = time.Hour * 24 * 7
+)
 
 func main() {
-	fmt.Println("ya zahra")
+	cfg := config.Config{
+
+		MyPostgres: postgres.Config{
+			UserName: "reza_abasi",
+			Password: "r1367R1367",
+			Port:     5431,
+			Host:     "localhost",
+			DBName:   "mental_health_db",
+		},
+		Auth: authservice.Config{
+			SignKey:               JwtSignKey,
+			AccessExpirationTime:  AccessTokenExpirationDuration,
+			RefreshExpirationTime: RefreshTokenExpirationDuration,
+
+			AccessSubject:  AccessTokenSubject,
+			RefreshSubject: RefreshTokenSubject,
+		},
+		HttpServer: config.HttpServer{Port: 8086},
+	}
+
+	authSvc, userSvc := setupservice(cfg)
+
+	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth)
+
+	server.Server()
+
+}
+
+func setupservice(cfg config.Config) (authservice.Service, userservice.Service) {
+
+	authSvc := authservice.New(cfg.Auth)
+
+	MyPostgresgresRepo := postgres.New(cfg.MyPostgres)
+
+	UserRepo := postgresuser.New(MyPostgresgresRepo.DB)
+
+	userSvc := userservice.New(UserRepo, authSvc)
+
+	return authSvc, userSvc
 }
