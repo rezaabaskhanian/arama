@@ -47,7 +47,52 @@ RETURNING id;`
 
 // GetUserByID implements [userservice.Repository].
 func (r DB) GetUserByID(ID string) (domain.User, error) {
-	panic("unimplemented")
+
+	const op = "postgres.GetUserByID"
+	const query = `
+        SELECT id, nickname,password_hash, phone,role, created_at, updated_at
+        FROM users
+        WHERE id = $1
+    `
+
+	var (
+		u      domain.User
+		rawID  string // یا uuid.UUID بسته به نوع ستون در دیتابیس
+		rawPwd string // هش پسورد به‌صورت رشته
+	)
+
+	// دریافت مقادیر از دیتابیس
+	err := r.conn.QueryRow(context.Background(), query, ID).Scan(
+		&rawID,
+		&u.NickName,
+		&rawPwd,
+		&u.Phone,
+		&u.Role,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return domain.User{}, richerror.New(op).
+				WithErr(err).
+				WithMessage(errmesg.ErrorMsgCantScanQueryResult).
+				WithKind(richerror.KindUnexpected)
+		}
+		return domain.User{}, err
+	}
+
+	// تبدیل UUID رشته‌ای به value‑object
+	uid, err := uservalueobject.ParseUserID(rawID)
+	if err != nil {
+		return domain.User{}, richerror.New(op).
+			WithErr(err).
+			WithMessage("invalid UUID returned from DB")
+	}
+	u.ID = uid
+
+	u.Password = *uservalueobject.NewPasswordFromHash(rawPwd)
+
+	return u, nil
 }
 
 // GetUserByNickName implements [userservice.Repository].
