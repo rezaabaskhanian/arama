@@ -12,7 +12,9 @@ func (h Handler) SetUserRoutes(e *echo.Echo) {
 
 	userGroup.GET("/profile", h.Profile, middlware.Auth(h.authSvc, h.authConfig))
 
-	userGroup.GET("/login", h.Login)
+	userGroup.POST("/login", h.Login)
 	userGroup.POST("/register", h.Register)
+
+	userGroup.POST("/reset-pass", h.ResetPass)
 
 }

@@ -6,6 +6,7 @@ import (
 	"aramina/internal/pkg/errmesg"
 	"aramina/internal/pkg/richerror"
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -146,5 +147,24 @@ func (r DB) GetUserByNickName(nickname string) (domain.User, error) {
 
 // ResetPassword implements [userservice.Repository].
 func (r DB) ResetPassword(nikname string, hashedPassword uservalueobject.Password) error {
-	panic("unimplemented")
+
+	const op = "postgres.ResetPassword"
+
+	query := `UPDATE users SET password_hash = $1 WHERE nickname = $2`
+
+	fmt.Println(hashedPassword, nikname, "hashedPassword, nikname")
+
+	cmdTag, err := r.conn.Exec(context.Background(), query, hashedPassword.Hash(), nikname)
+
+	if err != nil {
+		return richerror.New(op).WithErr(err)
+	}
+
+	// این میره تو خود دیتابیس میگرده اگه نبود میگه یوزر نیست
+
+	if cmdTag.RowsAffected() == 0 {
+		return richerror.New(op).WithMessage("user not found")
+	}
+
+	return nil
 }
