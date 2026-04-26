@@ -11,5 +11,19 @@ CREATE TABLE users (
 
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+
+CREATE TABLE crisis (
+  id UUID PRIMARY KEY ,
+  user_id UUID NOT NULL REFERENCES users(id),
+
+  current_step TEXT NOT NULL,
+  risk_level TEXT NOT NULL,
+
+  started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at TIMESTAMPTZ,
+
+  result TEXT NOT NULL
 );
