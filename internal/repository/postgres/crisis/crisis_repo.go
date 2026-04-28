@@ -3,6 +3,7 @@ package postgrescrisis
 import (
 	domain "aramina/internal/domain/crisis"
 	crisisvalueobject "aramina/internal/domain/crisis/valueobject"
+	uservalueobject "aramina/internal/domain/user/valueobject"
 	"aramina/internal/pkg/errmesg"
 	"aramina/internal/pkg/richerror"
 	"context"
@@ -75,10 +76,10 @@ func (r DB) GetByID(id crisisvalueobject.CrisisID) (domain.Crisis, error) {
 	}
 	c.ID = crisisvalueobject.CrisisID(idStr)
 	if userIDStr.Valid {
-		uid := crisisvalueobject.UserID(userIDStr.String)
-		c.UserID = &uid
+		uid := uservalueobject.UserID(userIDStr.String)
+		c.UserID = uid
 	} else {
-		c.UserID = nil
+		c.UserID = ""
 	}
 	return c, nil
 }

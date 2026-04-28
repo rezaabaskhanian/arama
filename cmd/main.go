@@ -5,9 +5,11 @@ import (
 	"aramina/internal/delivery/httpserver"
 	"aramina/internal/repository/postgres"
 	postgrescrisis "aramina/internal/repository/postgres/crisis"
+	postgressession "aramina/internal/repository/postgres/session"
 	postgresuser "aramina/internal/repository/postgres/user"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
+	sessionservice "aramina/internal/service/session"
 	userservice "aramina/internal/service/user"
 
 	"time"
@@ -44,15 +46,15 @@ func main() {
 		HttpServer: config.HttpServer{Port: 8086},
 	}
 
-	authSvc, userSvc, crisisSvc := setupservice(cfg)
+	authSvc, userSvc, crisisSvc, sessionSvc := setupservice(cfg)
 
-	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc)
+	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc)
 
 	server.Server()
 
 }
 
-func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service) {
+func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service, sessionservice.Service) {
 
 	authSvc := authservice.New(cfg.Auth)
 
@@ -62,9 +64,13 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	CrisisRepo := postgrescrisis.New(MyPostgresgresRepo.DB)
 
+	SessionRepo := postgressession.New(MyPostgresgresRepo.DB)
+
 	userSvc := userservice.New(UserRepo, authSvc)
 
 	crisisSvc := crisisservice.New(CrisisRepo)
 
-	return authSvc, userSvc, crisisSvc
+	sessionSvc := sessionservice.New(SessionRepo, userSvc)
+
+	return authSvc, userSvc, crisisSvc, sessionSvc
 }

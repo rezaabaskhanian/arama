@@ -24,6 +24,11 @@ type Service struct {
 	auth AuthGenerator
 }
 
+// // GetUserByID implements [sessionservice.UserService].
+// func (s Service) GetUserByID(ID string) (domain.User, error) {
+// 	panic("unimplemented")
+// }
+
 func New(repo Repository, auth AuthGenerator) Service {
 	return Service{repo: repo, auth: auth}
 }

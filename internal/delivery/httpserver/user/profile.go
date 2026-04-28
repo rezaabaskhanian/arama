@@ -1,31 +1,18 @@
 package userhandler
 
 import (
-	"aramina/internal/config"
+	"aramina/internal/pkg/claims"
 	"aramina/internal/pkg/richerror"
-	authservice "aramina/internal/service/auth"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-func getClaims(c echo.Context) (*authservice.Claims, error) {
-
-	claims, ok := c.Get(config.AuthMiddlewareContextKey).(*authservice.Claims)
-	if !ok || claims == nil {
-		return nil, fmt.Errorf("claims not found in context")
-	}
-
-	return c.Get(config.AuthMiddlewareContextKey).(*authservice.Claims), nil
-
-}
-
 func (h Handler) Profile(c echo.Context) error {
 
 	const op = "userhandler.Profile"
 
-	claims, err := getClaims(c)
+	claims, err := claims.GetClaims(c)
 	if err != nil {
 		return richerror.New(op).WithErr(err)
 	}

@@ -2,10 +2,10 @@ package crisishandler
 
 import "github.com/labstack/echo/v4"
 
-func (h Handler) SetUserRoutes(e *echo.Echo) {
+func (h Handler) SetCrisisRoutes(e *echo.Echo) {
 
-	userGroup := e.Group("/crisis")
+	crisisGroup := e.Group("/crisis")
 
-	userGroup.POST("/start", h.Start)
+	crisisGroup.POST("/start", h.Start)
 
 }

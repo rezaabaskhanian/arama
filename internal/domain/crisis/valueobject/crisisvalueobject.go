@@ -10,10 +10,6 @@ func NewCrisisID() CrisisID {
 	return CrisisID(uuid.NewString())
 }
 
-func NewUserID() UserID {
-	return UserID(uuid.NewString())
-}
-
 func NewExerciseID() ExerciseID {
 	return ExerciseID(uuid.NewString())
 }

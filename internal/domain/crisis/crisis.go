@@ -1,14 +1,15 @@
-package crisissesseion
+package crisis
 
 import (
 	crisisvalueobject "aramina/internal/domain/crisis/valueobject"
+	uservalueobject "aramina/internal/domain/user/valueobject"
 	"errors"
 	"time"
 )
 
 type Crisis struct {
 	ID          crisisvalueobject.CrisisID
-	UserID      *crisisvalueobject.UserID // چون nullable است
+	UserID      uservalueobject.UserID // چون nullable است
 	CurrentStep string
 	RiskLevel   string
 	StartedAt   time.Time
@@ -16,7 +17,7 @@ type Crisis struct {
 	Result      string
 }
 
-func NewCrisis(userID crisisvalueobject.UserID, currentstep string, risklevel string, result string) (Crisis, error) {
+func NewCrisis(userID uservalueobject.UserID, currentstep string, risklevel string, result string) (Crisis, error) {
 
 	if currentstep == "" || risklevel == "" || result == "" {
 		return Crisis{}, errors.New(" لطفا همه موارد را پر کنید ")
@@ -24,7 +25,7 @@ func NewCrisis(userID crisisvalueobject.UserID, currentstep string, risklevel st
 
 	return Crisis{
 		ID:          crisisvalueobject.NewCrisisID(),
-		UserID:      &userID,
+		UserID:      userID,
 		CurrentStep: currentstep,
 		RiskLevel:   risklevel,
 		StartedAt:   time.Now(),
