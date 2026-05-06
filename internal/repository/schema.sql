@@ -27,3 +27,27 @@ CREATE TABLE crisis (
 
   result TEXT NOT NULL
 );
+
+
+CREATE TABLE journal_entries (
+    -- شناسه یکتا
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    
+    -- ارتباط با کاربر
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    
+    -- محتوای یادداشت
+    content TEXT NOT NULL,
+    
+    -- حس و حال (۱ تا ۵)
+    mood SMALLINT NOT NULL CHECK (mood >= 1 AND mood <= 5),
+    
+    -- زمان‌ها
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    
+    -- ایندکس‌ها برای جستجوی سریع
+    INDEX idx_journal_user_id (user_id),
+    INDEX idx_journal_created_at (created_at),
+    INDEX idx_journal_user_created (user_id, created_at DESC)
+);
