@@ -6,11 +6,13 @@ import (
 
 	"aramina/internal/repository/postgres"
 	postgrescrisis "aramina/internal/repository/postgres/crisis"
+	postgresexercise "aramina/internal/repository/postgres/exercise"
 	postgresjournal "aramina/internal/repository/postgres/journal"
 	postgressession "aramina/internal/repository/postgres/session"
 	postgresuser "aramina/internal/repository/postgres/user"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
+	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
 	sessionservice "aramina/internal/service/session"
 	userservice "aramina/internal/service/user"
@@ -49,15 +51,16 @@ func main() {
 		HttpServer: config.HttpServer{Port: 8086},
 	}
 
-	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc := setupservice(cfg)
+	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc := setupservice(cfg)
 
-	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc, journalSvc)
+	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc, journalSvc, exerciseSvc)
 
 	server.Server()
 
 }
 
-func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service, sessionservice.Service, journalservice.Service) {
+func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service, sessionservice.Service,
+	journalservice.Service, exerciseservice.Service) {
 
 	authSvc := authservice.New(cfg.Auth)
 
@@ -71,6 +74,8 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	JournalRepo := postgresjournal.New(MyPostgresgresRepo.DB)
 
+	ExerciseRepo := postgresexercise.New(MyPostgresgresRepo.DB)
+
 	userSvc := userservice.New(UserRepo, authSvc)
 
 	crisisSvc := crisisservice.New(CrisisRepo)
@@ -79,5 +84,7 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	journalSvc := journalservice.New(JournalRepo, userSvc)
 
-	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc
+	exerciseSvc := exerciseservice.New(ExerciseRepo, userSvc)
+
+	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc
 }

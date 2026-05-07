@@ -3,11 +3,13 @@ package httpserver
 import (
 	"aramina/internal/config"
 	crisishandler "aramina/internal/delivery/httpserver/crisis"
+	exercisehandler "aramina/internal/delivery/httpserver/exersice"
 	journalhandler "aramina/internal/delivery/httpserver/journal"
 	sessionhandler "aramina/internal/delivery/httpserver/session"
 	userhandler "aramina/internal/delivery/httpserver/user"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
+	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
 	sessionservice "aramina/internal/service/session"
 	userservice "aramina/internal/service/user"
@@ -25,13 +27,16 @@ type Service struct {
 	sessionHandler sessionhandler.Handler
 
 	journalHandler journalhandler.Handler
+
+	exerciseHandler exercisehandler.Handler
 }
 
 func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Service, authConfig authservice.Config,
-	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service) Service {
+	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service, exersiceSvc exerciseservice.Service) Service {
 	return Service{cfg: cfg, userHandler: userhandler.New(userSvc, authSvc, authConfig, cfg.Auth.SignKey),
 		crisishandler: crisishandler.New(crisisSvc), sessionHandler: sessionhandler.New(sessionSvc, userSvc),
-		journalHandler: journalhandler.New(journalSvc, userSvc),
+		journalHandler:  journalhandler.New(journalSvc, userSvc),
+		exerciseHandler: exercisehandler.New(exersiceSvc),
 	}
 }
 
@@ -49,6 +54,8 @@ func (s Service) Server() {
 	s.crisishandler.SetCrisisRoutes(e)
 
 	s.journalHandler.SetJournalRoutes(e)
+
+	s.exerciseHandler.SetExerciseRoute(e)
 
 	// s.commitmentHandler.SetCommitmentRoute(e)
 
