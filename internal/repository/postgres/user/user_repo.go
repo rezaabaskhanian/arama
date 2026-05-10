@@ -97,19 +97,19 @@ func (r DB) GetUserByID(ID string) (domain.User, error) {
 }
 
 // GetUserByNickName implements [userservice.Repository].
-func (r DB) GetUserByNickName(nickname string) (domain.User, error) {
-	const op = "postgres.GetUserByNickName"
+func (r DB) GetUserByPhoneNumber(phone string) (domain.User, error) {
+	const op = "postgres.GetUserByPhoneNumber"
 
 	query := ` SELECT id, nickname,password_hash,phone,role , created_at, updated_at
         FROM users
-        WHERE nickname = $1`
+        WHERE phone = $1`
 	var (
 		u      domain.User
 		rawID  string // یا uuid.UUID بسته به نوع ستون در دیتابیس
 		rawPwd string // هش پسورد به‌صورت رشته
 	)
 
-	err := r.conn.QueryRow(context.Background(), query, nickname).Scan(
+	err := r.conn.QueryRow(context.Background(), query, phone).Scan(
 		&rawID,
 		&u.NickName,
 		&rawPwd,

@@ -1,7 +1,6 @@
 package userhandler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,7 +19,7 @@ func (h Handler) Register(c echo.Context) error {
 	resp, err := h.userSvc.Register(uReq)
 
 	if err != nil {
-		fmt.Println("Register error:", err)
+
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusCreated, resp)

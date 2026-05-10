@@ -12,7 +12,7 @@ func (s Service) Login(req dto.LoginRequest) (dto.LoginResponse, error) {
 
 	const op = "userservice.Login"
 
-	user, err := s.repo.GetUserByNickName(req.Nickname)
+	user, err := s.repo.GetUserByPhoneNumber(req.PhoneNumber)
 
 	if err != nil {
 		if err == pgx.ErrNoRows {

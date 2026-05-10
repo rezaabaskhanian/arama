@@ -3,6 +3,7 @@ package userhandler
 import (
 	"aramina/internal/pkg/richerror"
 	"aramina/internal/service/user/dto"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -12,6 +13,8 @@ import (
 func (h Handler) Login(c echo.Context) error {
 	const op = "httpserver.Login"
 	var req dto.LoginRequest
+
+	fmt.Println(req, "reqqqq_login")
 
 	if err := c.Bind(&req); err != nil {
 		log.Println(op, "Bind error:", err)

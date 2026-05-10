@@ -1,3 +1,5 @@
 package sessionservice
 
-func (s Service) CancelSession()
+func (s Service) CancelSession() {
+	panic("tesss")
+}

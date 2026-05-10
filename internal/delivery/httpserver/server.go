@@ -43,6 +43,30 @@ func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Ser
 func (s Service) Server() {
 
 	e := echo.New()
+
+	// for debug error
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{
+			"http://localhost:3000",
+			"http://localhost:3001",
+		},
+		AllowMethods: []string{
+			echo.GET,
+			echo.POST,
+			echo.PUT,
+			echo.DELETE,
+			echo.OPTIONS,
+		},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
+		AllowCredentials: true,
+	}))
+
 	e.Use(middleware.Logger())
 
 	e.Use(middleware.Recover())

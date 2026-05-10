@@ -8,7 +8,7 @@ import (
 
 func (h Handler) SetUserRoutes(e *echo.Echo) {
 
-	userGroup := e.Group("/user")
+	userGroup := e.Group("/users")
 
 	userGroup.GET("/profile", h.Profile, middlware.Auth(h.authSvc, h.authConfig))
 
