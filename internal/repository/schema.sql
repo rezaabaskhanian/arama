@@ -51,3 +51,25 @@ CREATE TABLE journal_entries (
     INDEX idx_journal_created_at (created_at),
     INDEX idx_journal_user_created (user_id, created_at DESC)
 );
+
+
+
+
+CREATE TABLE IF NOT EXISTS assessments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'in_progress',
+    answers JSONB,
+    total_score INT NOT NULL DEFAULT 0,
+    trauma_type VARCHAR(20),
+    started_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMP,
+    
+    CONSTRAINT fk_assessments_user 
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+-- ایجاد ایندکس‌ها
+CREATE INDEX IF NOT EXISTS idx_assessments_user_id ON assessments(user_id);
+CREATE INDEX IF NOT EXISTS idx_assessments_status ON assessments(status);
+CREATE INDEX IF NOT EXISTS idx_assessments_user_status ON assessments(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_assessments_started_at ON assessments(started_at);

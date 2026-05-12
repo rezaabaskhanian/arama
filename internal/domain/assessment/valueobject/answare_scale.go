@@ -2,6 +2,10 @@ package assessmentvalueobject
 
 type AnswerScale int
 
+func (s AnswerScale) Int() int {
+	return int(s)
+}
+
 const (
 	NotAtAll   AnswerScale = 0 // اصلا
 	LittleBit  AnswerScale = 1 // کمی

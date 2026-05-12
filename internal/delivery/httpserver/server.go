@@ -2,11 +2,13 @@ package httpserver
 
 import (
 	"aramina/internal/config"
+	assessmenthandler "aramina/internal/delivery/httpserver/assessment"
 	crisishandler "aramina/internal/delivery/httpserver/crisis"
 	exercisehandler "aramina/internal/delivery/httpserver/exersice"
 	journalhandler "aramina/internal/delivery/httpserver/journal"
 	sessionhandler "aramina/internal/delivery/httpserver/session"
 	userhandler "aramina/internal/delivery/httpserver/user"
+	assessmentservice "aramina/internal/service/assessment"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
 	exerciseservice "aramina/internal/service/exercise"
@@ -29,14 +31,25 @@ type Service struct {
 	journalHandler journalhandler.Handler
 
 	exerciseHandler exercisehandler.Handler
+
+	assessmentHandler assessmenthandler.Handler
 }
 
 func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Service, authConfig authservice.Config,
-	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service, exersiceSvc exerciseservice.Service) Service {
+	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service,
+	exersiceSvc exerciseservice.Service, assessmentSvc assessmentservice.Service) Service {
 	return Service{cfg: cfg, userHandler: userhandler.New(userSvc, authSvc, authConfig, cfg.Auth.SignKey),
-		crisishandler: crisishandler.New(crisisSvc), sessionHandler: sessionhandler.New(sessionSvc, userSvc),
-		journalHandler:  journalhandler.New(journalSvc, userSvc),
+
+		crisishandler: crisishandler.New(crisisSvc),
+
+		sessionHandler: sessionhandler.New(sessionSvc, userSvc),
+
+		journalHandler: journalhandler.New(journalSvc, userSvc),
+
 		exerciseHandler: exercisehandler.New(exersiceSvc),
+
+		assessmentHandler: assessmenthandler.New(
+			assessmentSvc, authSvc, authConfig, cfg.Auth.SignKey),
 	}
 }
 
@@ -80,6 +93,8 @@ func (s Service) Server() {
 	s.journalHandler.SetJournalRoutes(e)
 
 	s.exerciseHandler.SetExerciseRoute(e)
+
+	s.assessmentHandler.SetAssessmentRoute(e)
 
 	// s.commitmentHandler.SetCommitmentRoute(e)
 
