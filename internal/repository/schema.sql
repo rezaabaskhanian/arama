@@ -73,3 +73,13 @@ CREATE INDEX IF NOT EXISTS idx_assessments_user_id ON assessments(user_id);
 CREATE INDEX IF NOT EXISTS idx_assessments_status ON assessments(status);
 CREATE INDEX IF NOT EXISTS idx_assessments_user_status ON assessments(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_assessments_started_at ON assessments(started_at);
+
+
+
+
+CREATE TABLE user_exercises (
+    user_id    VARCHAR(36) NOT NULL,
+    exercise_id VARCHAR(36) NOT NULL,
+    completed_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, exercise_id)
+);

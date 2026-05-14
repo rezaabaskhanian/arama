@@ -24,7 +24,7 @@ func (s Service) CreateExercise(ctx context.Context, req dto.CreateExerciseReque
 		ExerciseInfo: dto.ExerciseInfo{
 			ID:         string(created.ID),
 			Title:      created.Title,
-			TraumaType: created.TraumaType,
+			TraumaType: string(created.TraumaType),
 			MediaURL:   created.MediaURL,
 			Duration:   created.Duration,
 			Order:      created.Order,

@@ -44,15 +44,11 @@ func (s Service) SubmitAnswer(ctx context.Context, userID string, assessmentID s
 		return dto.AssessmentResultResponse{}, richerror.New(op).WithErr(err).WithMessage("خطا در تکمیل تست")
 	}
 
-	fmt.Println(assessment, "CompleteAssessment")
-
 	err = s.repo.Update(ctx, assessment)
 
 	if err != nil {
 		return dto.AssessmentResultResponse{}, richerror.New(op).WithErr(err).WithMessage("خطا در ذخیره نتیجه")
 	}
-
-	fmt.Println(assessment, "assessmentFinal2")
 
 	return dto.AssessmentResultResponse{
 		AssessmentID: string(assessment.ID),

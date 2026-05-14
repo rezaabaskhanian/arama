@@ -1,6 +1,8 @@
 package postgresexercise
 
-import "github.com/jackc/pgx/v5/pgxpool"
+import (
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type DB struct {
 	conn *pgxpool.Pool

@@ -106,12 +106,12 @@ func (e *Exercise) UpdateExercise(
 
 // NewUserExercise ثبت انجام تمرین توسط کاربر
 func NewUserExercise(
-	userID uservalueobject.UserID,
-	exerciseID exercisevalueobject.EexrciseID,
+	userID string,
+	exerciseID string,
 ) UserExercise {
 	return UserExercise{
-		UserID:      userID,
-		ExerciseID:  exerciseID,
+		UserID:      uservalueobject.UserID(userID),
+		ExerciseID:  exercisevalueobject.EexrciseID(exerciseID),
 		CompletedAt: time.Now(),
 		Rating:      -1,
 	}
