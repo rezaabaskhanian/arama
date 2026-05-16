@@ -1,0 +1,5 @@
+production:
+  dialect: postgres
+  datasource: host=localhost port=5431 dbname=mental_health_db user=${DB_USER} password=${DB_PASS} sslmode=disable
+  dir:  repository/postgres/migrations
+  table: migrations

@@ -3,7 +3,10 @@ package main
 import (
 	"aramina/internal/config"
 	"aramina/internal/delivery/httpserver"
+	"fmt"
+	"os"
 
+	"aramina/internal/repository/migrator"
 	"aramina/internal/repository/postgres"
 	postgresassessment "aramina/internal/repository/postgres/assessment"
 	postgrescrisis "aramina/internal/repository/postgres/crisis"
@@ -52,6 +55,15 @@ func main() {
 		},
 		HttpServer: config.HttpServer{Port: 8086},
 	}
+
+	migrator := migrator.New(cfg.MyPostgres)
+	if os.Getenv("ENV") != "production" {
+		fmt.Println(migrator, "mii")
+		migrator.Up()
+
+	}
+
+	fmt.Println("server is runing")
 
 	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc := setupservice(cfg)
 
