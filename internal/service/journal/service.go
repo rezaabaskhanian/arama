@@ -8,17 +8,20 @@ import (
 
 type Repository interface {
 	Save(ctx context.Context, j domain.Journal) (domain.Journal, error)
-	// Update(ctx context.Context, entry *JournalEntry) error
-	// FindByID(ctx context.Context, id uuid.UUID) (*JournalEntry, error)
-	// FindByUserID(ctx context.Context, userID uservalueobject.UserID, limit, offset int) ([]*JournalEntry, error)
+	Update(ctx context.Context, entry domain.Journal) error
+	FindByID(ctx context.Context, id string, userID string) (domain.Journal, error)
+	FindByUserID(ctx context.Context, userID string, limit, offset int) ([]domain.Journal, error)
 	CountTodayEntries(ctx context.Context, id string) (int, error) // برای قانون ۳ بار در روز
-	// Delete(ctx context.Context, id uuid.UUID) error
-
+	Delete(ctx context.Context, id string) error
 }
 
 type UserService interface {
 	GetUserByIDService(ID string) (domainuser.User, error)
 }
+
+//GetUserJournalEntries
+// UpdateJournalEntry
+// DeleteJournalEntry
 
 type Service struct {
 	repo Repository

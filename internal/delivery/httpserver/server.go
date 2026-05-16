@@ -44,7 +44,7 @@ func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Ser
 
 		sessionHandler: sessionhandler.New(sessionSvc, userSvc),
 
-		journalHandler: journalhandler.New(journalSvc, userSvc),
+		journalHandler: journalhandler.New(journalSvc, userSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
 		exerciseHandler: exercisehandler.New(exersiceSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
