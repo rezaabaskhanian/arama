@@ -10,7 +10,10 @@ func (s Service) GetExercisByTraumaType(ctx context.Context, req dto.GetByTrauma
 
 	const op = "GetExercisByTraumaType.exerciseservice"
 
-	res, err := s.repo.FindExercisesByTraumaType(ctx, req.TraumaType)
+	// اگر از نوع TraumaType است، به string تبدیل کن
+	traumaTypeStr := string(req.TraumaType)
+
+	res, err := s.repo.FindExercisesByTraumaType(ctx, traumaTypeStr)
 
 	if err != nil {
 		return []dto.GetByTraumaTypeResponse{}, richerror.New(op).WithErr(err).WithMessage("مشکل در ساخت ورزش جدید")
@@ -20,14 +23,14 @@ func (s Service) GetExercisByTraumaType(ctx context.Context, req dto.GetByTrauma
 	for _, ex := range res {
 		result = append(result, dto.GetByTraumaTypeResponse{
 			ExerciseInfo: dto.ExerciseInfo{
-				ID:    string(ex.ID),
-				Title: ex.Title,
-
-				TraumaType: string(ex.TraumaType),
-				MediaURL:   ex.MediaURL,
-				Duration:   ex.Duration,
-				Order:      ex.Order,
-				IsActive:   ex.IsActive,
+				ID:          string(ex.ID),
+				Title:       ex.Title,
+				Description: ex.Description,
+				TraumaType:  string(ex.TraumaType),
+				MediaURL:    ex.MediaURL,
+				Duration:    ex.Duration,
+				Order:       ex.Order,
+				IsActive:    ex.IsActive,
 			},
 		})
 	}

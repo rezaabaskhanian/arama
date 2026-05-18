@@ -50,6 +50,7 @@ RETURNING id;`
 func (r DB) GetUserByID(ID string) (domain.User, error) {
 
 	const op = "postgres.GetUserByID"
+
 	const query = `
         SELECT id, nickname,password_hash, phone,role, created_at, updated_at
         FROM users
@@ -72,6 +73,7 @@ func (r DB) GetUserByID(ID string) (domain.User, error) {
 		&u.CreatedAt,
 		&u.UpdatedAt,
 	)
+
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return domain.User{}, richerror.New(op).

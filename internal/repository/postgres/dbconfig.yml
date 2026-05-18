@@ -1,5 +1,16 @@
+development:
+  dialect: postgres
+  datasource: host=localhost port=5431 dbname=mental_health_db user=reza_abasi password=r1367R1367 sslmode=disable
+  dir: internal/repository/postgres/migrations
+  table: migrations
+
+
+
+# repository/postgres/migrations
 production:
   dialect: postgres
   datasource: host=localhost port=5431 dbname=mental_health_db user=${DB_USER} password=${DB_PASS} sslmode=disable
-  dir:  repository/postgres/migrations
+  dir:  internal/repository/postgres/migrations
   table: migrations
+
+

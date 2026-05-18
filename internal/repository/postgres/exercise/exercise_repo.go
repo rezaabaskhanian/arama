@@ -1,10 +1,12 @@
 package postgresexercise
 
 import (
+	assessmentvalueobject "aramina/internal/domain/assessment/valueobject"
 	domain "aramina/internal/domain/exercise"
 	exercisevalueobject "aramina/internal/domain/exercise/valueobject"
 	"aramina/internal/pkg/richerror"
 	"context"
+	"fmt"
 )
 
 func (e DB) SaveExercise(ctx context.Context, ex domain.Exercise) (domain.Exercise, error) {
@@ -41,7 +43,7 @@ func (e DB) SaveExercise(ctx context.Context, ex domain.Exercise) (domain.Exerci
 		return domain.Exercise{}, richerror.New(op).WithErr(err).WithMessage("failed to insert sessions")
 	}
 
-	ex.ID = exercisevalueobject.EexrciseID(id)
+	ex.ID = exercisevalueobject.ExerciseID(id)
 
 	return ex, nil
 
@@ -67,41 +69,46 @@ func (e DB) SaveUserExercise(ctx context.Context, userID, exerciseID string) err
 }
 
 func (e DB) FindExercisesByTraumaType(ctx context.Context, traumaType string) ([]domain.Exercise, error) {
-
 	const op = "postgresexercise.FindExercisesByTraumaType"
+
+	// query := `
+	// SELECT
+	//     id, title, description, trauma_type, media_url,
+	//     duration, order_index, is_active, created_at
+	// FROM exercises
+	// WHERE trauma_type = $1 AND is_active = true
+	// ORDER BY order_index ASC
+	// `
 	query := `
-	SELECT 
-		id, 
-		title, 
-		description, 
-		trauma_type, 
-		media_url, 
-		duration, 
-		order_index, 
-		is_active, 
-		created_at
-	FROM exercises
-	WHERE trauma_type = $1 AND is_active = true
-	ORDER BY order_index ASC
-`
+    SELECT 
+        id, title, description, trauma_type, media_url, 
+        duration, order_index, is_active, created_at
+    FROM exercises
+    WHERE trauma_type = $1 AND is_active = true
+    ORDER BY order_index ASC
+    `
 
 	rows, err := e.conn.Query(ctx, query, traumaType)
-
+	fmt.Printf("rows: %v, err: %v\n", rows, err)
 	if err != nil {
-		return []domain.Exercise{}, richerror.New(op).WithErr(err).WithMessage("failed to insert sessions")
+		return nil, richerror.New(op).WithErr(err)
 	}
-
 	defer rows.Close()
 
 	var exercises []domain.Exercise
+	count := 0
 
 	for rows.Next() {
+
 		var ex domain.Exercise
+		var idStr string
+		var traumaTypeStr string
+
 		err := rows.Scan(
-			&ex.ID,
+			&idStr,
 			&ex.Title,
 			&ex.Description,
-			&ex.TraumaType,
+			&traumaTypeStr,
 			&ex.MediaURL,
 			&ex.Duration,
 			&ex.Order,
@@ -109,17 +116,20 @@ func (e DB) FindExercisesByTraumaType(ctx context.Context, traumaType string) ([
 			&ex.CreatedAt,
 		)
 		if err != nil {
-			return nil, richerror.New(op).WithErr(err).WithMessage("failed to scan exercise")
+			fmt.Printf("❌ Scan error at row %d: %v\n", count, err)
+			return nil, richerror.New(op).WithErr(err)
 		}
+
+		ex.ID, err = exercisevalueobject.ParseExerciseID(idStr)
+		if err != nil {
+			return nil, err
+		}
+		ex.TraumaType = assessmentvalueobject.TraumaType(traumaTypeStr)
+
 		exercises = append(exercises, ex)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, richerror.New(op).WithErr(err).WithMessage("rows iteration error")
-	}
-
 	return exercises, nil
-
 }
 
 func (e DB) FindExerciseByID(ctx context.Context, id string) (domain.Exercise, error) {
@@ -161,13 +171,14 @@ func (e DB) FindExerciseByID(ctx context.Context, id string) (domain.Exercise, e
 	return ex, nil
 }
 
-func (e DB) CountTotalExercies(ctx context.Context) (int, error) {
+func (e DB) CountTotalExercies(ctx context.Context, traumaType string) (int, error) {
 	const op = "postgresexercise.CountTotalExercies"
-	query := `
-       SELECT COUNT(*) FROM exercises WHERE is_active = true
-    `
+	// query := `
+	//    SELECT COUNT(*) FROM exercises WHERE is_active = true
+	// `
+	query := `SELECT COUNT(*) FROM exercises WHERE trauma_type = $1 AND is_active = true`
 	var count int
-	err := e.conn.QueryRow(ctx, query).Scan(&count)
+	err := e.conn.QueryRow(ctx, query, traumaType).Scan(&count)
 	return count, err
 }
 

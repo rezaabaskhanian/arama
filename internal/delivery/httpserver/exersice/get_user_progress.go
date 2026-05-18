@@ -14,13 +14,16 @@ func (h Handler) GetUserProgress(c echo.Context) error {
 
 	const op = "exercisehandler.GetUserProgress"
 
+	traumaType := c.QueryParam("trauma_type")
+
 	claims, err := claims.GetClaims(c)
 	if err != nil {
 		return richerror.New(op).WithErr(err)
 	}
 
 	req := dto.GetUserProgressRequest{
-		UserID: claims.UserID,
+		UserID:     claims.UserID,
+		TraumaType: traumaType, // ← مقداردهی
 	}
 
 	res, err := h.exerciseSvc.GetUserProgress(context.Background(), req)

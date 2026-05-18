@@ -27,7 +27,7 @@ func (s Service) CompletedExercises(ctx context.Context, req dto.CompleteExrcise
 		return dto.CompleteExrciseResonse{}, richerror.New(op).WithErr(err).WithMessage("مشکل در ثبت تمرین")
 	}
 
-	totalExercises, err := s.repo.CountTotalExercies(ctx)
+	totalExercises, err := s.repo.CountTotalExercies(ctx, req.TraumaType)
 
 	if err != nil {
 		return dto.CompleteExrciseResonse{}, richerror.New(op).WithErr(err)
@@ -38,6 +38,7 @@ func (s Service) CompletedExercises(ctx context.Context, req dto.CompleteExrcise
 	if err != nil {
 		return dto.CompleteExrciseResonse{}, richerror.New(op).WithErr(err)
 	}
+
 	ProgressPercent := 0
 
 	if totalExercises > 0 {

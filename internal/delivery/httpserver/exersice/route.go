@@ -8,7 +8,7 @@ import (
 
 func (h Handler) SetExerciseRoute(e *echo.Echo) {
 
-	exerciseGroupe := e.Group("/exercise")
+	exerciseGroupe := e.Group("/exercises")
 
 	exerciseGroupe.POST("/create", h.CreateExercise)
 
@@ -16,7 +16,7 @@ func (h Handler) SetExerciseRoute(e *echo.Echo) {
 
 	exerciseGroupe.GET("/by-id/:exerciseID", h.GetExerciseByID)
 
-	exerciseGroupe.POST("/compelete", h.GetExerciseByID, middlware.Auth(h.authSvc, h.authConfig))
+	exerciseGroupe.POST("/:exerciseID/complete", h.CompletedExercises, middlware.Auth(h.authSvc, h.authConfig))
 
 	exerciseGroupe.GET("/user_progress", h.GetUserProgress, middlware.Auth(h.authSvc, h.authConfig))
 }

@@ -20,7 +20,7 @@ type Repository interface {
 	SaveUserExercise(ctx context.Context, userID, exerciseID string) error
 	// FindUserExercise(ctx context.Context, userID uservalueobject.UserID, exerciseID uuid.UUID) (*UserExercise, error)
 	// FindUserCompletedExercises(ctx context.Context, userID uservalueobject.UserID) ([]*UserExercise, error)
-	CountTotalExercies(ctx context.Context) (int, error)
+	CountTotalExercies(ctx context.Context, traumaType string) (int, error)
 	CountUserCompletedExercises(ctx context.Context, userID string) (int, error)
 	IsExerciseCompletedByUser(ctx context.Context, userID string, exerciseID string) (bool, error)
 }

@@ -83,3 +83,20 @@ CREATE TABLE user_exercises (
     completed_at TIMESTAMP NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, exercise_id)
 );
+
+
+
+
+-- // ========== تست 1: ببینم اصلاً بت می‌تونیم به دیتابیس وصل بشیم ==========
+-- 	var testCount int
+-- 	err := e.conn.QueryRow(ctx, "SELECT 1").Scan(&testCount)
+-- 	fmt.Println("📡 Database connection test, SELECT 1 result:", testCount, "error:", err)
+-- 	if err != nil {
+-- 		return nil, err
+-- 	}
+
+-- 	// ========== تست 2: بدون هیچ شرطی، همه تمرین‌ها را بیار ==========
+-- 	allQuery := `SELECT COUNT(*) FROM exercises`
+-- 	var allCount int
+-- 	err = e.conn.QueryRow(ctx, allQuery).Scan(&allCount)
+-- 	fmt.Println("📊 Total exercises in table (no filter):", allCount, "error:", err)

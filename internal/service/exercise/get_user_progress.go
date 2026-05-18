@@ -4,12 +4,15 @@ import (
 	"aramina/internal/pkg/richerror"
 	"aramina/internal/service/exercise/dto"
 	"context"
+	"fmt"
 )
 
 func (s Service) GetUserProgress(ctx context.Context, req dto.GetUserProgressRequest) (dto.GetUserProgressResponse, error) {
 	const op = "exerciseservice.GetUserProgress"
 
-	totalExercises, err := s.repo.CountTotalExercies(ctx)
+	fmt.Println(req, "totalExercises, op,")
+
+	totalExercises, err := s.repo.CountTotalExercies(ctx, req.TraumaType)
 
 	if err != nil {
 		return dto.GetUserProgressResponse{}, richerror.New(op).WithErr(err).WithMessage("خطا در دریافت تعداد کل تمرین‌ها")

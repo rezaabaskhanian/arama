@@ -10,7 +10,7 @@ import (
 
 // Exercise تمرین اصلی
 type Exercise struct {
-	ID          exercisevalueobject.EexrciseID
+	ID          exercisevalueobject.ExerciseID
 	Title       string
 	Description string
 	TraumaType  assessmentvalueobject.TraumaType // mild, moderate, severe, complex
@@ -25,7 +25,7 @@ type Exercise struct {
 // UserExercise وضعیت انجام تمرین توسط کاربر
 type UserExercise struct {
 	UserID      uservalueobject.UserID
-	ExerciseID  exercisevalueobject.EexrciseID
+	ExerciseID  exercisevalueobject.ExerciseID
 	CompletedAt time.Time
 	Rating      int // 1 تا 5، اختیاری
 }
@@ -111,7 +111,7 @@ func NewUserExercise(
 ) UserExercise {
 	return UserExercise{
 		UserID:      uservalueobject.UserID(userID),
-		ExerciseID:  exercisevalueobject.EexrciseID(exerciseID),
+		ExerciseID:  exercisevalueobject.ExerciseID(exerciseID),
 		CompletedAt: time.Now(),
 		Rating:      -1,
 	}
