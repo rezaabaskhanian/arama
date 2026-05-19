@@ -21,23 +21,23 @@ func NewJournal(userID uservalueobject.UserID,
 	content string,
 	mood journalvalueobject.MoodType,
 	todayEntriesCount int, // تعداد یادداشت های کاربر
-) (Journal, error) {
+) (*Journal, error) {
 	const op = "journal.NewJournal"
 
 	// قانون ۱: متن خالی نباشد
 	if len(content) == 0 {
-		return Journal{}, richerror.New(op).WithMessage("متن یادداشت نمیتواند خالی باشد")
+		return nil, richerror.New(op).WithMessage("متن یادداشت نمیتواند خالی باشد")
 	}
 
 	if len(content) > 1000 {
-		return Journal{}, richerror.New(op).WithMessage("متن یادداشت بیشتر از ۱۰۰۰ کاراکتر است ")
+		return nil, richerror.New(op).WithMessage("متن یادداشت بیشتر از ۱۰۰۰ کاراکتر است ")
 	}
 	if todayEntriesCount >= 3 {
-		return Journal{}, richerror.New(op).WithMessage("امروز بیش از ۳ بار یادداشت نوشته‌اید")
+		return nil, richerror.New(op).WithMessage("امروز بیش از ۳ بار یادداشت نوشته‌اید")
 	}
 
 	now := time.Now()
-	return Journal{
+	return &Journal{
 		ID:        journalvalueobject.NewJournalID(),
 		UserID:    userID,
 		Content:   content,

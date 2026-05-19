@@ -10,11 +10,13 @@ func (h Handler) SetJournalRoutes(e *echo.Echo) {
 
 	journalGroup := e.Group("/journal")
 
-	journalGroup.POST("/create", h.CreateJournal)
+	journalGroup.POST("/create", h.CreateJournal, middlware.Auth(h.authSvc, h.authConfig))
 
-	journalGroup.GET("/user/:limit/:offset", h.GetUserJournals, middlware.Auth(h.authSvc, h.authConfig))
+	journalGroup.GET("/user", h.GetUserJournals, middlware.Auth(h.authSvc, h.authConfig))
 
-	journalGroup.PUT("/update", h.UpdateJournal, middlware.Auth(h.authSvc, h.authConfig))
+	journalGroup.GET("/:id", h.GetJournalEntryByID, middlware.Auth(h.authSvc, h.authConfig))
+
+	journalGroup.PUT("/:id", h.UpdateJournal, middlware.Auth(h.authSvc, h.authConfig))
 
 	journalGroup.DELETE("/delete/:id", h.DeleteJournal, middlware.Auth(h.authSvc, h.authConfig))
 

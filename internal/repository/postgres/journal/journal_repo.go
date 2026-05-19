@@ -4,6 +4,7 @@ import (
 	domain "aramina/internal/domain/journal"
 	journalvalueobject "aramina/internal/domain/journal/valueobject"
 	"errors"
+	"fmt"
 	"time"
 
 	"aramina/internal/pkg/richerror"
@@ -20,6 +21,8 @@ func (d DB) Save(ctx context.Context, s domain.Journal) (domain.Journal, error) 
 	VALUES ($1, $2, $3, $4, NOW())
 	RETURNING id`
 
+	fmt.Println(s, "errrreeee")
+
 	var id string
 
 	err := d.conn.QueryRow(ctx, query,
@@ -27,10 +30,10 @@ func (d DB) Save(ctx context.Context, s domain.Journal) (domain.Journal, error) 
 		string(s.UserID), // تبدیل UserID به string
 		s.Content,
 		s.Mood,
-		s.CreatedAt,
 	).Scan(&id)
 
 	if err != nil {
+
 		return domain.Journal{}, richerror.New(op).WithErr(err).WithMessage("failed to insert journals")
 	}
 
@@ -50,14 +53,17 @@ func (d DB) CountTodayEntries(ctx context.Context, userID string) (int, error) {
 
 	query := `
         SELECT COUNT(*)
-        FROM journal_entries
+        FROM journals
         WHERE user_id = $1
         AND created_at >= $2
         AND created_at < $3
     `
 
 	err := d.conn.QueryRow(ctx, query, userID, startOfDay, endOfDay).Scan(&count)
-	return count, richerror.New(op).WithErr(err).WithMessage("failed to insert time journal")
+	if err != nil {
+		return 0, richerror.New(op).WithErr(err).WithMessage("failed to count today entries")
+	}
+	return count, nil
 }
 
 func (d DB) FindByUserID(ctx context.Context, userID string, limit, offset int) ([]domain.Journal, error) {
@@ -79,7 +85,7 @@ func (d DB) FindByUserID(ctx context.Context, userID string, limit, offset int) 
 		LIMIT $2 OFFSET $3
 		`
 
-	rows, err := d.conn.Query(ctx, query)
+	rows, err := d.conn.Query(ctx, query, userID, limit, offset)
 
 	if err != nil {
 		return []domain.Journal{}, richerror.New(op).WithErr(err).WithMessage("failed to get journals")
@@ -118,28 +124,45 @@ func (d DB) FindByUserID(ctx context.Context, userID string, limit, offset int) 
 func (d DB) Update(ctx context.Context, journal domain.Journal) error {
 	const op = "postgresjournal.Update"
 
-	query := `update journals SET content =$2,mod =$3, updated_at = $4 WHERE id = $1 AND user_id =$5`
+	query := `
+        UPDATE journals 
+        SET content = $2, mood = $3, updated_at = NOW()
+        WHERE id = $1 AND user_id = $4
+    `
 
-	_, err := d.conn.Exec(ctx, query,
-		journal.ID,
+	// fmt.Printf("🔍 Query: %s\n", query)
+	// fmt.Printf("🔍 Params: id=%s, content=%s, mood=%d, user_id=%s\n",
+	//     string(journal.ID),
+	//     journal.Content,
+	//     journal.Mood,
+	//     string(journal.UserID),
+	// )
+
+	result, err := d.conn.Exec(ctx, query,
+		string(journal.ID),
 		journal.Content,
 		journal.Mood,
-		journal.UpdatedAt,
-		journal.UserID,
+		string(journal.UserID),
 	)
-
 	if err != nil {
+		// fmt.Printf("❌ Exec error: %v\n", err)
 		return richerror.New(op).WithErr(err).WithMessage("failed to update journal")
 	}
 
-	return nil
+	rowsAffected := result.RowsAffected()
+	// fmt.Printf("✅ Rows affected: %d\n", rowsAffected)
 
+	if rowsAffected == 0 {
+		return richerror.New(op).WithMessage("هیچ رکوردی به‌روزرسانی نشد")
+	}
+
+	return nil
 }
 
 func (d DB) FindByID(ctx context.Context, id string, userID string) (domain.Journal, error) {
 	const op = "postgresjournal.FindByID"
 
-	query := `SELECT id,user_id,content,mod,created_at,updated_at FROM journals WHERE id =$1 AND user_id =$2`
+	query := `SELECT id,user_id,content,mood,created_at,updated_at FROM journals WHERE id =$1 AND user_id =$2`
 
 	var journal domain.Journal
 
@@ -151,6 +174,7 @@ func (d DB) FindByID(ctx context.Context, id string, userID string) (domain.Jour
 		&journal.CreatedAt,
 		&journal.UpdatedAt,
 	)
+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.Journal{}, richerror.New(op).WithMessage("یادداشت یافت نشد")

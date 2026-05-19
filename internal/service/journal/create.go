@@ -17,12 +17,11 @@ func (s Service) CreateJournal(ctx context.Context, req dto.JournalCreateRequest
 	if err != nil {
 		return dto.JournalCreateResponse{}, richerror.New(op).WithErr(err).WithMessage("چنین یوزری موجود نیست")
 	}
+
 	todayCount, err := s.repo.CountTodayEntries(ctx, userID)
 	if err != nil {
 		return dto.JournalCreateResponse{}, richerror.New(op).WithErr(err).WithMessage("چنین یوزری موجود نیست")
 	}
-
-	ctx = context.Background()
 
 	NewJournal, err := domain.NewJournal(user.ID, req.Content, journalvalueobject.MoodType(req.Mood), todayCount)
 
@@ -30,14 +29,13 @@ func (s Service) CreateJournal(ctx context.Context, req dto.JournalCreateRequest
 		return dto.JournalCreateResponse{}, richerror.New(op).WithErr(err).WithMessage("مشکل در ایجاد ‌ژورنال جدید")
 	}
 
-	created, err := s.repo.Save(ctx, NewJournal)
+	created, err := s.repo.Save(ctx, *NewJournal)
 
 	return dto.JournalCreateResponse{JournalInfo: dto.JournalInfo{
-		ID:      string(created.ID),
-		UserID:  string(created.UserID),
-		Content: created.Content,
-		Mood:    int(created.Mood),
-
+		ID:        string(created.ID),
+		UserID:    string(created.UserID),
+		Content:   created.Content,
+		Mood:      int(created.Mood),
 		CreatedAt: created.CreatedAt,
 		UpdatedAt: created.UpdatedAt,
 	}}, nil

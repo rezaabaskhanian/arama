@@ -96,7 +96,6 @@ func (e DB) FindExercisesByTraumaType(ctx context.Context, traumaType string) ([
 	defer rows.Close()
 
 	var exercises []domain.Exercise
-	count := 0
 
 	for rows.Next() {
 
@@ -116,7 +115,7 @@ func (e DB) FindExercisesByTraumaType(ctx context.Context, traumaType string) ([
 			&ex.CreatedAt,
 		)
 		if err != nil {
-			fmt.Printf("❌ Scan error at row %d: %v\n", count, err)
+
 			return nil, richerror.New(op).WithErr(err)
 		}
 

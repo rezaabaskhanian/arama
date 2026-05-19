@@ -14,20 +14,21 @@ func (h Handler) CompletedExercises(c echo.Context) error {
 
 	const op = "exercisehandler.CompletedExercises"
 
-	// var req dto.CompleteExrciseRequest
+	var req dto.CompleteExrciseRequest
 
-	// if err := c.Bind(&req); err != nil {
-	// 	richerror.New(op).WithErr(err).WithMessage("مشکل در فرستادن ورودی")
-	// }
+	if err := c.Bind(&req); err != nil {
+		richerror.New(op).WithErr(err).WithMessage("مشکل در فرستادن ورودی")
+	}
 	claims, err := claims.GetClaims(c)
 	if err != nil {
 		return richerror.New(op).WithErr(err)
 	}
 	exerciseID := c.Param("exerciseID")
 
-	req := dto.CompleteExrciseRequest{
+	req = dto.CompleteExrciseRequest{
 		ExerciseID: exerciseID,
 		UserID:     claims.UserID,
+		TraumaType: req.TraumaType,
 	}
 
 	completeExer, err := h.exerciseSvc.CompletedExercises(context.Background(), req)

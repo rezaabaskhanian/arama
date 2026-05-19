@@ -4,13 +4,10 @@ import (
 	"aramina/internal/pkg/richerror"
 	"aramina/internal/service/exercise/dto"
 	"context"
-	"fmt"
 )
 
 func (s Service) GetUserProgress(ctx context.Context, req dto.GetUserProgressRequest) (dto.GetUserProgressResponse, error) {
 	const op = "exerciseservice.GetUserProgress"
-
-	fmt.Println(req, "totalExercises, op,")
 
 	totalExercises, err := s.repo.CountTotalExercies(ctx, req.TraumaType)
 

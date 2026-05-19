@@ -16,6 +16,7 @@ func (s Service) UpdateJournalEntry(ctx context.Context, req dto.JournalUpdateRe
 	res, err := s.repo.FindByID(ctx, req.JournalID, userID)
 
 	if err != nil {
+
 		return richerror.New(op).WithErr(err).WithMessage("مشکل در پیدا کردن یادداشت")
 	}
 
@@ -29,6 +30,10 @@ func (s Service) UpdateJournalEntry(ctx context.Context, req dto.JournalUpdateRe
 	}
 
 	err = s.repo.Update(ctx, result)
+	if err != nil {
 
-	return err
+		return richerror.New(op).WithErr(err).WithMessage("خطا در به‌روزرسانی یادداشت")
+	}
+
+	return nil
 }
