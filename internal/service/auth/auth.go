@@ -29,11 +29,11 @@ func New(cfg Config) Service {
 
 // CreateAccessToken now accepts UserID as string
 func (s Service) CreateAccessToken(user domain.User) (string, error) {
-	return s.createToken(string(user.ID), s.config.AccessSubject, s.config.AccessExpirationTime)
+	return s.createToken(string(user.ID), user.Role, s.config.AccessSubject, s.config.AccessExpirationTime)
 }
 
 func (s Service) CreateRefreshToken(user domain.User) (string, error) {
-	return s.createToken(string(user.ID), s.config.AccessSubject, s.config.AccessExpirationTime)
+	return s.createToken(string(user.ID), user.Role, s.config.AccessSubject, s.config.AccessExpirationTime)
 }
 
 func (s Service) ParseToken(authHeader string) (*Claims, error) {
@@ -63,11 +63,11 @@ func (s Service) ParseToken(authHeader string) (*Claims, error) {
 
 }
 
-func (s Service) createToken(userID string, subject string, expireDuration time.Duration) (string, error) {
+func (s Service) createToken(userID string, role, subject string, expireDuration time.Duration) (string, error) {
 	const op = "auhtservice.createtoken"
 	claims := Claims{
 		UserID: userID,
-		// Role:   role,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject: subject,
 			//TODO: set the expire time

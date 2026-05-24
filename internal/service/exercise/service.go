@@ -26,6 +26,9 @@ type Repository interface {
 	IsExerciseCompletedByUser(ctx context.Context, userID string, exerciseID string) (bool, error)
 
 	GetLastUserExerciseDate(ctx context.Context, userID string) (*time.Time, error)
+
+	FindAll(ctx context.Context, isActive *bool) ([]domain.Exercise, error)
+	CountAll(ctx context.Context) (int, error)
 }
 
 type UserService interface {

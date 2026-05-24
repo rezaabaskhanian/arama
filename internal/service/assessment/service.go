@@ -24,6 +24,8 @@ type Repository interface {
 
 	// // پیدا کردن همه ارزیابی‌های کاربر (تاریخچه)
 	// FindByUserID(ctx context.Context, userID string) ([]domain.Assessment, error)
+
+	CountAll(ctx context.Context) (int, error)
 }
 
 type UserService interface {

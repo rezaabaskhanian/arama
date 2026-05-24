@@ -6,6 +6,7 @@ import (
 	exercisevalueobject "aramina/internal/domain/exercise/valueobject"
 	"aramina/internal/pkg/richerror"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -231,4 +232,83 @@ func (d DB) GetLastUserExerciseDate(ctx context.Context, userID string) (*time.T
 	}
 
 	return &lastDate, nil
+}
+
+// FindAll پیدا کردن همه تمرین‌ها (با قابلیت فیلتر isActive)
+func (d DB) FindAll(ctx context.Context, isActive *bool) ([]domain.Exercise, error) {
+	const op = "postgresexercise.FindAll"
+
+	query := `
+        SELECT 
+            id, title, description, trauma_type, media_url, 
+            duration, order_index, is_active, created_at, updated_at
+        FROM exercises
+        WHERE 1=1
+    `
+	args := []interface{}{}
+	argIndex := 1
+
+	if isActive != nil {
+		query += fmt.Sprintf(" AND is_active = $%d", argIndex)
+		args = append(args, *isActive)
+		argIndex++
+	}
+
+	query += ` ORDER BY order_index ASC`
+
+	rows, err := d.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, richerror.New(op).WithErr(err).WithMessage("failed to query exercises")
+	}
+	defer rows.Close()
+
+	var exercises []domain.Exercise
+
+	for rows.Next() {
+		var ex domain.Exercise
+		var idStr string
+		var traumaTypeStr string
+		var mediaURL sql.NullString
+
+		err := rows.Scan(
+			&idStr,
+			&ex.Title,
+			&ex.Description,
+			&traumaTypeStr,
+			&mediaURL,
+			&ex.Duration,
+			&ex.Order,
+			&ex.IsActive,
+			&ex.CreatedAt,
+			&ex.UpdatedAt,
+		)
+		if err != nil {
+			return nil, richerror.New(op).WithErr(err).WithMessage("failed to scan exercise")
+		}
+
+		ex.ID = exercisevalueobject.ExerciseID(idStr)
+		ex.TraumaType = assessmentvalueobject.TraumaType(traumaTypeStr)
+		if mediaURL.Valid {
+			ex.MediaURL = mediaURL.String
+		}
+
+		exercises = append(exercises, ex)
+	}
+
+	return exercises, nil
+}
+
+// CountAll تعداد کل تمرین‌ها
+func (d DB) CountAll(ctx context.Context) (int, error) {
+	const op = "postgresexercise.CountAll"
+
+	query := `SELECT COUNT(*) FROM exercises`
+
+	var count int
+	err := d.conn.QueryRow(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, richerror.New(op).WithErr(err).WithMessage("failed to count exercises")
+	}
+
+	return count, nil
 }

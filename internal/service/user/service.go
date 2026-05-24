@@ -2,6 +2,7 @@ package userservice
 
 import (
 	uservalueobject "aramina/internal/domain/user/valueobject"
+	"context"
 
 	domain "aramina/internal/domain/user"
 )
@@ -12,6 +13,10 @@ type Repository interface {
 	GetUserByPhoneNumber(phonenumber string) (domain.User, error)
 
 	ResetPassword(nikname string, hashedPassword uservalueobject.Password) error
+
+	UdateRole(ctx context.Context, userID, role string) error
+	Count(ctx context.Context) (int, error)
+	FindAll(ctx context.Context, limit, offset int) ([]domain.User, error)
 }
 
 type AuthGenerator interface {

@@ -204,6 +204,21 @@ func (d DB) LatestAssessment(ctx context.Context, userID string) (domain.Assessm
 	}, nil
 }
 
+// CountAll تعداد کل تست‌ها
+func (d DB) CountAll(ctx context.Context) (int, error) {
+	const op = "postgresassessment.CountAll"
+
+	query := `SELECT COUNT(*) FROM assessments`
+
+	var count int
+	err := d.conn.QueryRow(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, richerror.New(op).WithErr(err).WithMessage("failed to count assessments")
+	}
+
+	return count, nil
+}
+
 // // FindLatestByUserID پیدا کردن آخرین ارزیابی کاربر
 // func (d *DB) FindLatestByUserID(ctx context.Context, userID string) (*assessment.Assessment, error) {
 // 	const op = "postgresassessment.FindLatestByUserID"

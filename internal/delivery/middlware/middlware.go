@@ -3,6 +3,7 @@ package middlware
 import (
 	"net/http"
 
+	"aramina/internal/pkg/claims"
 	"aramina/internal/pkg/richerror"
 	authservice "aramina/internal/service/auth"
 
@@ -40,4 +41,24 @@ func Auth(service authservice.Service, config authservice.Config) echo.Middlewar
 			return claims, nil
 		},
 	})
+}
+
+// AdminOnly بررسی نقش ادمین (بعد از Auth باید بیاید)
+func AdminOnly(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userClaims, err := claims.GetClaims(c)
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, map[string]string{
+				"message": "احراز هویت ناموفق",
+			})
+		}
+
+		if userClaims.Role != "admin" {
+			return c.JSON(http.StatusForbidden, map[string]string{
+				"message": "دسترسی غیرمجاز. فقط ادمین‌ها می‌توانند وارد این بخش شوند.",
+			})
+		}
+
+		return next(c)
+	}
 }

@@ -170,3 +170,99 @@ func (r DB) ResetPassword(nikname string, hashedPassword uservalueobject.Passwor
 
 	return nil
 }
+
+func (d DB) UdateRole(ctx context.Context, userID string, role string) error {
+
+	// UpdateRole تغییر نقش کاربر
+
+	const op = "postgresuser.UpdateRole"
+
+	query := `
+        UPDATE users 
+        SET role = $2, updated_at = NOW()
+        WHERE id = $1
+    `
+
+	result, err := d.conn.Exec(ctx, query, userID, role)
+	if err != nil {
+		return richerror.New(op).WithErr(err).WithMessage("failed to update user role")
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return richerror.New(op).WithMessage("user not found")
+	}
+
+	return nil
+}
+
+// Count تعداد کل کاربران
+func (d DB) Count(ctx context.Context) (int, error) {
+	const op = "postgresuser.Count"
+
+	query := `SELECT COUNT(*) FROM users`
+
+	var count int
+	err := d.conn.QueryRow(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, richerror.New(op).WithErr(err).WithMessage("failed to count users")
+	}
+
+	return count, nil
+}
+
+// FindAll گرفتن همه کاربران با صفحه‌بندی
+func (d DB) FindAll(ctx context.Context, limit, offset int) ([]domain.User, error) {
+	const op = "postgresuser.FindAll"
+
+	query := `
+        SELECT 
+            id, nickname, phone, password_hash, role, 
+            created_at, updated_at
+        FROM users
+        ORDER BY created_at DESC
+        LIMIT $1 OFFSET $2
+    `
+
+	rows, err := d.conn.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, richerror.New(op).WithErr(err).WithMessage("failed to query users")
+	}
+	defer rows.Close()
+
+	var users []domain.User
+
+	for rows.Next() {
+		var u domain.User
+		var rawID string
+		var rawPasswordHash string
+
+		err := rows.Scan(
+			&rawID,
+			&u.NickName,
+			&u.Phone,
+			// &u.Email,
+			&rawPasswordHash,
+			&u.Role,
+			&u.CreatedAt,
+			&u.UpdatedAt,
+		)
+		if err != nil {
+			return nil, richerror.New(op).WithErr(err).WithMessage("failed to scan user")
+		}
+
+		u.ID, err = uservalueobject.ParseUserID(rawID)
+		if err != nil {
+			return nil, richerror.New(op).WithErr(err)
+		}
+		u.Password = *uservalueobject.NewPasswordFromHash(rawPasswordHash)
+
+		users = append(users, u)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, richerror.New(op).WithErr(err).WithMessage("rows iteration error")
+	}
+
+	return users, nil
+}
