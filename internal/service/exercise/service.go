@@ -4,6 +4,7 @@ import (
 	domain "aramina/internal/domain/exercise"
 	domainuser "aramina/internal/domain/user"
 	"context"
+	"time"
 )
 
 type Repository interface {
@@ -23,6 +24,8 @@ type Repository interface {
 	CountTotalExercies(ctx context.Context, traumaType string) (int, error)
 	CountUserCompletedExercises(ctx context.Context, userID string) (int, error)
 	IsExerciseCompletedByUser(ctx context.Context, userID string, exerciseID string) (bool, error)
+
+	GetLastUserExerciseDate(ctx context.Context, userID string) (*time.Time, error)
 }
 
 type UserService interface {

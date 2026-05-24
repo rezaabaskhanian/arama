@@ -4,6 +4,7 @@ import (
 	"aramina/internal/config"
 	assessmenthandler "aramina/internal/delivery/httpserver/assessment"
 	crisishandler "aramina/internal/delivery/httpserver/crisis"
+	dashboardhandler "aramina/internal/delivery/httpserver/dashboard"
 	exercisehandler "aramina/internal/delivery/httpserver/exersice"
 	journalhandler "aramina/internal/delivery/httpserver/journal"
 	sessionhandler "aramina/internal/delivery/httpserver/session"
@@ -11,6 +12,7 @@ import (
 	assessmentservice "aramina/internal/service/assessment"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
+	dashboardservice "aramina/internal/service/dashboard"
 	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
 	sessionservice "aramina/internal/service/session"
@@ -33,14 +35,16 @@ type Service struct {
 	exerciseHandler exercisehandler.Handler
 
 	assessmentHandler assessmenthandler.Handler
+
+	dashboardHandler dashboardhandler.Handler
 }
 
 func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Service, authConfig authservice.Config,
 	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service,
-	exersiceSvc exerciseservice.Service, assessmentSvc assessmentservice.Service) Service {
+	exersiceSvc exerciseservice.Service, assessmentSvc assessmentservice.Service, dashboardSvc dashboardservice.Service) Service {
 	return Service{cfg: cfg, userHandler: userhandler.New(userSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
-		crisishandler: crisishandler.New(crisisSvc),
+		crisishandler: crisishandler.New(crisisSvc, assessmentSvc, journalSvc, exersiceSvc),
 
 		sessionHandler: sessionhandler.New(sessionSvc, userSvc),
 
@@ -50,6 +54,8 @@ func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Ser
 
 		assessmentHandler: assessmenthandler.New(
 			assessmentSvc, authSvc, authConfig, cfg.Auth.SignKey),
+
+		dashboardHandler: dashboardhandler.New(dashboardSvc, authSvc, authConfig),
 	}
 }
 
@@ -95,6 +101,8 @@ func (s Service) Server() {
 	s.exerciseHandler.SetExerciseRoute(e)
 
 	s.assessmentHandler.SetAssessmentRoute(e)
+
+	s.dashboardHandler.SetDashboardRoutes(e)
 
 	// s.commitmentHandler.SetCommitmentRoute(e)
 

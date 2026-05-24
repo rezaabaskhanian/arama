@@ -20,4 +20,8 @@ func (h Handler) SetJournalRoutes(e *echo.Echo) {
 
 	journalGroup.DELETE("/delete/:id", h.DeleteJournal, middlware.Auth(h.authSvc, h.authConfig))
 
+	journalGroup.GET("/today-mood", h.TodayMood, middlware.Auth(h.authSvc, h.authConfig))
+
+	journalGroup.POST("/upsert-mood-add", h.UpsertTodayMood, middlware.Auth(h.authSvc, h.authConfig))
+
 }

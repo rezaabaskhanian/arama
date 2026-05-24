@@ -6,7 +6,11 @@ import (
 	exercisevalueobject "aramina/internal/domain/exercise/valueobject"
 	"aramina/internal/pkg/richerror"
 	"context"
+	"errors"
 	"fmt"
+	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (e DB) SaveExercise(ctx context.Context, ex domain.Exercise) (domain.Exercise, error) {
@@ -202,4 +206,29 @@ func (e DB) IsExerciseCompletedByUser(ctx context.Context, userID string, exerci
 	}
 
 	return exists, nil
+}
+
+// internal/repository/postgres/exercise/repo.go
+
+func (d DB) GetLastUserExerciseDate(ctx context.Context, userID string) (*time.Time, error) {
+	const op = "postgresexercise.GetLastUserExerciseDate"
+
+	query := `
+        SELECT completed_at
+        FROM user_exercises
+        WHERE user_id = $1
+        ORDER BY completed_at DESC
+        LIMIT 1
+    `
+
+	var lastDate time.Time
+	err := d.conn.QueryRow(ctx, query, userID).Scan(&lastDate)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil // هیچ تمرینی انجام نداده
+		}
+		return nil, richerror.New(op).WithErr(err).WithMessage("failed to get last exercise date")
+	}
+
+	return &lastDate, nil
 }

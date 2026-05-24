@@ -17,6 +17,7 @@ import (
 	assessmentservice "aramina/internal/service/assessment"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
+	dashboardservice "aramina/internal/service/dashboard"
 	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
 	sessionservice "aramina/internal/service/session"
@@ -65,16 +66,17 @@ func main() {
 
 	fmt.Println("server is runing")
 
-	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc := setupservice(cfg)
+	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc := setupservice(cfg)
 
-	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc)
+	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc, journalSvc,
+		exerciseSvc, assessmentSvc, dashboardSvc)
 
 	server.Server()
 
 }
 
 func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service, sessionservice.Service,
-	journalservice.Service, exerciseservice.Service, assessmentservice.Service) {
+	journalservice.Service, exerciseservice.Service, assessmentservice.Service, dashboardservice.Service) {
 
 	authSvc := authservice.New(cfg.Auth)
 
@@ -94,7 +96,7 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	userSvc := userservice.New(UserRepo, authSvc)
 
-	crisisSvc := crisisservice.New(CrisisRepo)
+	crisisSvc := crisisservice.New(CrisisRepo, userSvc)
 
 	sessionSvc := sessionservice.New(SessionRepo, userSvc)
 
@@ -104,5 +106,7 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	assessmentSvc := assessmentservice.New(AssessmentRepo, userSvc)
 
-	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc
+	dashboardSvc := dashboardservice.New(exerciseSvc, journalSvc, assessmentSvc)
+
+	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc
 }

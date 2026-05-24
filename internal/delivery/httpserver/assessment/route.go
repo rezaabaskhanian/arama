@@ -16,4 +16,6 @@ func (h Handler) SetAssessmentRoute(e *echo.Echo) {
 	groupeAssessment.POST("/submit", h.SubmitAnswer, middlware.Auth(h.authSvc, h.authConfig))
 
 	groupeAssessment.GET("/result/:id", h.GetAssessmentResult, middlware.Auth(h.authSvc, h.authConfig))
+
+	groupeAssessment.GET("/latest", h.GetAssessmentLatest, middlware.Auth(h.authSvc, h.authConfig))
 }

@@ -1,13 +1,25 @@
 package crisishandler
 
-import crisisservice "aramina/internal/service/crisis"
+import (
+	assessmentservice "aramina/internal/service/assessment"
+	crisisservice "aramina/internal/service/crisis"
+	exerciseservice "aramina/internal/service/exercise"
+	journalservice "aramina/internal/service/journal"
+)
 
 type Handler struct {
-	crisisSvc crisisservice.Service
+	crisisSvc     crisisservice.Service
+	assessmentSvc assessmentservice.Service
+	journalSvc    journalservice.Service
+	exerciseSvc   exerciseservice.Service
 }
 
-func New(crisisSvc crisisservice.Service) Handler {
+func New(crisisSvc crisisservice.Service, assessmentSvc assessmentservice.Service,
+	journalSvc journalservice.Service, exerciseSvc exerciseservice.Service) Handler {
 	return Handler{
-		crisisSvc: crisisSvc,
+		crisisSvc:     crisisSvc,
+		assessmentSvc: assessmentSvc,
+		journalSvc:    journalSvc,
+		exerciseSvc:   exerciseSvc,
 	}
 }

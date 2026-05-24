@@ -5,10 +5,13 @@ import (
 	assessmentvalueobject "aramina/internal/domain/assessment/valueobject"
 	uservalueobject "aramina/internal/domain/user/valueobject"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"aramina/internal/pkg/richerror"
 	"context"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (d DB) Save(ctx context.Context, j domain.Assessment) error {
@@ -132,6 +135,66 @@ func (d DB) FindByID(ctx context.Context, id string) (domain.Assessment, error) 
 	return domain.Assessment{
 		ID:          assessmentvalueobject.AssessmentID(assessmentID),
 		UserID:      uservalueobject.UserID(userID),
+		Status:      assessmentvalueobject.AssessmentStatus(status),
+		Answers:     answers,
+		TotalScore:  totalScore,
+		TraumaType:  assessmentvalueobject.TraumaType(traumaType),
+		StartedAt:   startedAt,
+		CompletedAt: completedAt,
+	}, nil
+}
+
+func (d DB) LatestAssessment(ctx context.Context, userID string) (domain.Assessment, error) {
+	const op = "postgresassessment.LatestAssessment"
+
+	query := `
+        SELECT
+            id, user_id, status, answers, total_score, trauma_type, started_at, completed_at
+        FROM assessments
+        WHERE user_id = $1
+        ORDER BY started_at DESC
+        LIMIT 1`
+
+	var (
+		assessmentID string
+		dbUserID     string
+		status       string
+		answersJSON  []byte
+		totalScore   int
+		traumaType   string
+		startedAt    time.Time
+		completedAt  *time.Time
+	)
+
+	err := d.conn.QueryRow(ctx, query, userID).Scan(
+		&assessmentID,
+		&dbUserID,
+		&status,
+		&answersJSON,
+		&totalScore,
+		&traumaType,
+		&startedAt,
+		&completedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Assessment{}, richerror.New(op).WithMessage("هیچ تستی یافت نشد")
+		}
+		return domain.Assessment{}, richerror.New(op).WithErr(err).WithMessage("failed to find latest assessment")
+	}
+
+	// تبدیل Answers از JSON
+	var answers []domain.Answer
+	if answersJSON != nil && len(answersJSON) > 0 {
+		if err := json.Unmarshal(answersJSON, &answers); err != nil {
+			return domain.Assessment{}, richerror.New(op).WithErr(err).WithMessage("failed to unmarshal answers")
+		}
+	}
+
+	return domain.Assessment{
+		ID:          assessmentvalueobject.AssessmentID(assessmentID),
+		UserID:      uservalueobject.UserID(dbUserID),
 		Status:      assessmentvalueobject.AssessmentStatus(status),
 		Answers:     answers,
 		TotalScore:  totalScore,

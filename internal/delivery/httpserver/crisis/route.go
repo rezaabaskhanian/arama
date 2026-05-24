@@ -6,6 +6,9 @@ func (h Handler) SetCrisisRoutes(e *echo.Echo) {
 
 	crisisGroup := e.Group("/crisis")
 
-	crisisGroup.POST("/start", h.Start)
+	crisisGroup.POST("/check", h.CheckCrisis)
+
+	crisisGroup.GET("/active", h.GetActiveCrisis)
+	crisisGroup.PUT("/:id/resolve", h.ResolveCrisis)
 
 }

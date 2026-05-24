@@ -2,7 +2,6 @@ package assessmentservice
 
 import (
 	"context"
-	"fmt"
 
 	domain "aramina/internal/domain/assessment"
 	"aramina/internal/pkg/richerror"
@@ -17,7 +16,7 @@ func (s Service) StartAssessment(ctx context.Context, userID string) (dto.Assess
 	if err != nil {
 		return dto.AssessmentCreateResponse{}, richerror.New(op).WithErr(err).WithMessage("چنین یوزری موجود نیست")
 	}
-	fmt.Println(userID, "assessmetssssnew")
+
 	// ساخت ارزیابی جدید
 	newAssessment, err := domain.NewAssessment(user.ID)
 	if err != nil {

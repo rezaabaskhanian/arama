@@ -17,6 +17,8 @@ type Repository interface {
 	// پیدا کردن ارزیابی با ID
 	FindByID(ctx context.Context, id string) (domain.Assessment, error)
 
+	LatestAssessment(ctx context.Context, userID string) (domain.Assessment, error)
+
 	// // پیدا کردن آخرین ارزیابی کاربر (برای نمایش در پروفایل)
 	// FindLatestByUserID(ctx context.Context, userID string) (domain.Assessment, error)
 
