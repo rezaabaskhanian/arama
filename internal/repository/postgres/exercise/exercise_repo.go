@@ -94,7 +94,7 @@ func (e DB) FindExercisesByTraumaType(ctx context.Context, traumaType string) ([
     `
 
 	rows, err := e.conn.Query(ctx, query, traumaType)
-	fmt.Printf("rows: %v, err: %v\n", rows, err)
+
 	if err != nil {
 		return nil, richerror.New(op).WithErr(err)
 	}
@@ -136,7 +136,7 @@ func (e DB) FindExercisesByTraumaType(ctx context.Context, traumaType string) ([
 	return exercises, nil
 }
 
-func (e DB) FindExerciseByID(ctx context.Context, id string) (domain.Exercise, error) {
+func (e DB) FindExerciseByID(ctx context.Context, id string) (*domain.Exercise, error) {
 	const op = "postgresexercise.FindExerciseByID"
 
 	query := `
@@ -169,10 +169,10 @@ func (e DB) FindExerciseByID(ctx context.Context, id string) (domain.Exercise, e
 	)
 
 	if err != nil {
-		return domain.Exercise{}, richerror.New(op).WithErr(err).WithMessage("failed to find exercise")
+		return nil, richerror.New(op).WithErr(err).WithMessage("failed to find exercise")
 	}
 
-	return ex, nil
+	return &ex, nil
 }
 
 func (e DB) CountTotalExercies(ctx context.Context, traumaType string) (int, error) {
@@ -311,4 +311,62 @@ func (d DB) CountAll(ctx context.Context) (int, error) {
 	}
 
 	return count, nil
+}
+
+// DeleteExercise حذف تمرین (غیرفعال کردن یا حذف فیزیکی)
+func (d DB) DeleteExercise(ctx context.Context, id string) error {
+	const op = "postgresexercise.DeleteExercise"
+
+	query := `DELETE FROM exercises WHERE id = $1`
+
+	result, err := d.conn.Exec(ctx, query, id)
+	if err != nil {
+		return richerror.New(op).WithErr(err).WithMessage("failed to delete exercise")
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return richerror.New(op).WithMessage("exercise not found")
+	}
+
+	return nil
+}
+
+// UpdateExercise به‌روزرسانی تمرین
+func (d DB) UpdateExercise(ctx context.Context, exercise *domain.Exercise) error {
+	const op = "postgresexercise.UpdateExercise"
+
+	query := `
+        UPDATE exercises 
+        SET title = $2,
+            description = $3,
+            trauma_type = $4,
+            media_url = $5,
+            duration = $6,
+            order_index = $7,
+            is_active = $8,
+            updated_at = NOW()
+        WHERE id = $1
+    `
+
+	result, err := d.conn.Exec(ctx, query,
+		string(exercise.ID),
+		exercise.Title,
+		exercise.Description,
+		string(exercise.TraumaType),
+		exercise.MediaURL,
+		exercise.Duration,
+		exercise.Order,
+		exercise.IsActive,
+	)
+	if err != nil {
+		return richerror.New(op).WithErr(err).WithMessage("failed to update exercise")
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return richerror.New(op).WithMessage("exercise not found")
+	}
+
+	return nil
 }

@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -78,7 +79,7 @@ func (d DB) Update(ctx context.Context, crisis *domain.Crisis) error {
         WHERE id = $1
     `
 
-	_, err = d.conn.Exec(ctx, query,
+	result, err := d.conn.Exec(ctx, query,
 		string(crisis.ID),
 		crisis.Level,
 		string(crisis.Status),
@@ -94,6 +95,9 @@ func (d DB) Update(ctx context.Context, crisis *domain.Crisis) error {
 	if err != nil {
 		return richerror.New(op).WithErr(err).WithMessage("failed to update crisis")
 	}
+
+	rowsAffected := result.RowsAffected()
+	fmt.Printf("📊 Rows affected: %d\n", rowsAffected)
 
 	return nil
 }

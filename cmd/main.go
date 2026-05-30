@@ -14,6 +14,7 @@ import (
 	postgresjournal "aramina/internal/repository/postgres/journal"
 	postgressession "aramina/internal/repository/postgres/session"
 	postgresuser "aramina/internal/repository/postgres/user"
+	adminservice "aramina/internal/service/admin"
 	assessmentservice "aramina/internal/service/assessment"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
@@ -66,17 +67,17 @@ func main() {
 
 	fmt.Println("server is runing")
 
-	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc := setupservice(cfg)
+	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc := setupservice(cfg)
 
 	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc, journalSvc,
-		exerciseSvc, assessmentSvc, dashboardSvc)
+		exerciseSvc, assessmentSvc, dashboardSvc, adminSvc)
 
 	server.Server()
 
 }
 
 func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service, sessionservice.Service,
-	journalservice.Service, exerciseservice.Service, assessmentservice.Service, dashboardservice.Service) {
+	journalservice.Service, exerciseservice.Service, assessmentservice.Service, dashboardservice.Service, adminservice.Service) {
 
 	authSvc := authservice.New(cfg.Auth)
 
@@ -108,5 +109,7 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	dashboardSvc := dashboardservice.New(exerciseSvc, journalSvc, assessmentSvc)
 
-	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc
+	adminSvc := adminservice.New(UserRepo, ExerciseRepo, AssessmentRepo)
+
+	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc
 }

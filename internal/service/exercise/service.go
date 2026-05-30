@@ -11,11 +11,12 @@ type Repository interface {
 	//تمرین ها
 	SaveExercise(ctx context.Context, exercise domain.Exercise) (domain.Exercise, error)
 
-	// UpdateExercise(ctx context.Context, exercise *Exercise) error
-	FindExerciseByID(ctx context.Context, id string) (domain.Exercise, error)
+	DeleteExercise(ctx context.Context, id string) error
+	UpdateExercise(ctx context.Context, exercise *domain.Exercise) error
+
+	FindExerciseByID(ctx context.Context, id string) (*domain.Exercise, error)
 	FindExercisesByTraumaType(ctx context.Context, traumaType string) ([]domain.Exercise, error)
 	// FindAllExercises(ctx context.Context, isActive *bool) ([]*Exercise, error)
-	// DeleteExercise(ctx context.Context, id uuid.UUID) error
 
 	// وضعیت انجام تمرین توسط کاربر
 	SaveUserExercise(ctx context.Context, userID, exerciseID string) error

@@ -4,6 +4,7 @@ import (
 	crisisvalueobject "aramina/internal/domain/crisis/valueobject"
 	"aramina/internal/pkg/richerror"
 	"context"
+	"fmt"
 )
 
 // ResolveCrisis حل کردن بحران
@@ -26,15 +27,21 @@ func (s Service) ResolveCrisis(ctx context.Context, crisisID string, userID stri
 		return nil // یا return errors.New("بحران قبلاً حل شده است")
 	}
 
-	// 4. حل کردن بحران
+	fmt.Printf("🔍 BEFORE Resolve - Status: %s, ResolvedAt: %v\n", crisis.Status, crisis.ResolvedAt)
+
 	if err := crisis.Resolve(); err != nil {
-		return richerror.New(op).WithErr(err).WithMessage("خطا در حل بحران")
+		return err
+	}
+
+	fmt.Printf("🔍 AFTER Resolve - Status: %s, ResolvedAt: %v\n", crisis.Status, crisis.ResolvedAt)
+
+	if err := s.repo.Update(ctx, crisis); err != nil {
+		return err
 	}
 
 	// 5. ذخیره در دیتابیس
-	if err := s.repo.Update(ctx, crisis); err != nil {
-		return richerror.New(op).WithErr(err).WithMessage("خطا در ذخیره بحران")
-	}
+	updated, _ := s.repo.FindByID(ctx, crisisvalueobject.CrisisID(crisisID))
+	fmt.Printf("🔍 AFTER Update from DB - Status: %s, ResolvedAt: %v\n", updated.Status, updated.ResolvedAt)
 
 	return nil
 }

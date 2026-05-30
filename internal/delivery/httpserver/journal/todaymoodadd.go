@@ -4,6 +4,7 @@ import (
 	"aramina/internal/pkg/claims"
 	"aramina/internal/pkg/richerror"
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,13 +21,17 @@ func (h Handler) UpsertTodayMood(c echo.Context) error {
 		})
 	}
 
-	var mood int
+	var req struct {
+		Mood int `json:"mood"`
+	}
 
-	if err := c.Bind(&mood); err != nil {
+	if err := c.Bind(&req); err != nil {
 		return richerror.New(op).WithErr(err)
 	}
 
-	err = h.journalSvc.UpsertTodayMood(context.Background(), claims.UserID, mood)
+	fmt.Println(req.Mood, op, "sdfsd")
+
+	err = h.journalSvc.UpsertTodayMood(context.Background(), claims.UserID, req.Mood)
 
 	return c.JSON(http.StatusOK, err)
 

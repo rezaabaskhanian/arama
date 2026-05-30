@@ -7,6 +7,7 @@ import (
 	"aramina/internal/pkg/richerror"
 	"aramina/internal/service/crisis/dto"
 	"context"
+	"fmt"
 	"strings"
 )
 
@@ -27,13 +28,18 @@ func (s Service) DetectAndCreateCrisis(ctx context.Context, req dto.DetectCrisis
 	// چک کردن بحران فعال قبلی
 	existingCrisis, err := s.repo.FindActiveByUserID(ctx, req.UserID)
 	if err == nil && existingCrisis != nil {
+		fmt.Printf("Existing crisis level: %d, New level: %d\n", existingCrisis.Level, level)
+
 		if existingCrisis.Level >= level {
 			// سطح قبلی بالاتر یا برابر است → نیاز به بحران جدید نیست
-			return nil, nil
+			return existingCrisis, nil // ← بحران موجود را برگردان
 		}
+
 		// سطح جدید بالاتر است → بحران قبلی را resolve کن
 		existingCrisis.Resolve()
-		s.repo.Update(ctx, existingCrisis)
+		if err := s.repo.Update(ctx, existingCrisis); err != nil {
+			return nil, richerror.New(op).WithErr(err)
+		}
 	}
 
 	// ایجاد بحران جدید
@@ -45,8 +51,7 @@ func (s Service) DetectAndCreateCrisis(ctx context.Context, req dto.DetectCrisis
 	)
 
 	// ذخیره در دیتابیس
-	err = s.repo.Save(ctx, newCrisis)
-	if err != nil {
+	if err := s.repo.Save(ctx, newCrisis); err != nil {
 		return nil, richerror.New(op).WithErr(err).WithMessage("خطا در ذخیره بحران")
 	}
 

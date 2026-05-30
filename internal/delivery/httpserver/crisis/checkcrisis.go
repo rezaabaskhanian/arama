@@ -2,20 +2,47 @@ package crisishandler
 
 import (
 	"aramina/internal/pkg/claims"
+	"aramina/internal/pkg/richerror"
+	dtoAssessment "aramina/internal/service/assessment/dto"
 	"aramina/internal/service/crisis/dto"
-	"context"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
 func (h Handler) CheckCrisis(c echo.Context) error {
-	claims, _ := claims.GetClaims(c)
+	const op = "crisishandler.CheckCrisis"
 
-	ctx := context.Background()
+	claims, err := claims.GetClaims(c)
+	if err != nil {
+		return richerror.New(op).WithErr(err)
+	}
 
-	// جمع‌آوری داده‌ها از سرویس‌های دیگر
-	testScore, _ := h.assessmentSvc.GetAssessmentLatest(ctx, claims.UserID)
+	ctx := c.Request().Context()
+
+	// 1. اول چک کن بحران فعال وجود دارد؟
+	activeCrisis, err := h.crisisSvc.GetActiveCrisis(ctx, claims.UserID)
+	if err != nil {
+		return err
+	}
+
+	// 2. اگر بحران فعال وجود دارد، همان را برگردان (بدون ایجاد بحران جدید)
+	if activeCrisis != nil {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"level":        activeCrisis.Level,
+			"message":      activeCrisis.Message,
+			"resources":    activeCrisis.Resources,
+			"has_crisis":   true,
+			"triggered_by": activeCrisis.TriggeredBy,
+		})
+	}
+
+	// 3. اگر بحران فعال وجود ندارد، داده‌ها را جمع‌آوری کن
+	testScore, err := h.assessmentSvc.GetAssessmentLatest(ctx, claims.UserID)
+	if err != nil {
+		testScore = dtoAssessment.AssessmentResultResponse{TotalScore: 0}
+	}
+
 	recentMoods, _ := h.journalSvc.GetRecentMoods(ctx, claims.UserID, 5)
 	latestJournal, _ := h.journalSvc.GetLatestJournalContent(ctx, claims.UserID)
 	inactiveDays, _ := h.exerciseSvc.GetInactiveDays(ctx, claims.UserID)
@@ -28,21 +55,25 @@ func (h Handler) CheckCrisis(c echo.Context) error {
 		InactiveDays:  inactiveDays,
 	}
 
-	crisis, err := h.crisisSvc.DetectAndCreateCrisis(c.Request().Context(), req)
+	// 4. بحران جدید ایجاد کن
+	newCrisis, err := h.crisisSvc.DetectAndCreateCrisis(ctx, req)
 	if err != nil {
 		return err
 	}
 
-	if crisis == nil {
+	if newCrisis == nil {
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"level":   0,
-			"message": "وضعیت عادی است",
+			"level":      0,
+			"message":    "وضعیت عادی است",
+			"has_crisis": false,
 		})
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"level":     crisis.Level,
-		"message":   crisis.Message,
-		"resources": crisis.Resources,
+		"level":        newCrisis.Level,
+		"message":      newCrisis.Message,
+		"resources":    newCrisis.Resources,
+		"has_crisis":   true,
+		"triggered_by": newCrisis.TriggeredBy,
 	})
 }

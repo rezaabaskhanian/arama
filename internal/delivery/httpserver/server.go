@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"aramina/internal/config"
+	adminhandler "aramina/internal/delivery/httpserver/admin"
 	assessmenthandler "aramina/internal/delivery/httpserver/assessment"
 	crisishandler "aramina/internal/delivery/httpserver/crisis"
 	dashboardhandler "aramina/internal/delivery/httpserver/dashboard"
@@ -9,6 +10,7 @@ import (
 	journalhandler "aramina/internal/delivery/httpserver/journal"
 	sessionhandler "aramina/internal/delivery/httpserver/session"
 	userhandler "aramina/internal/delivery/httpserver/user"
+	adminservice "aramina/internal/service/admin"
 	assessmentservice "aramina/internal/service/assessment"
 	authservice "aramina/internal/service/auth"
 	crisisservice "aramina/internal/service/crisis"
@@ -37,14 +39,18 @@ type Service struct {
 	assessmentHandler assessmenthandler.Handler
 
 	dashboardHandler dashboardhandler.Handler
+
+	adminHandler adminhandler.Handler
 }
 
 func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Service, authConfig authservice.Config,
 	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service,
-	exersiceSvc exerciseservice.Service, assessmentSvc assessmentservice.Service, dashboardSvc dashboardservice.Service) Service {
+	exersiceSvc exerciseservice.Service, assessmentSvc assessmentservice.Service,
+	dashboardSvc dashboardservice.Service, adminSvc adminservice.Service) Service {
+
 	return Service{cfg: cfg, userHandler: userhandler.New(userSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
-		crisishandler: crisishandler.New(crisisSvc, assessmentSvc, journalSvc, exersiceSvc),
+		crisishandler: crisishandler.New(crisisSvc, assessmentSvc, journalSvc, exersiceSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
 		sessionHandler: sessionhandler.New(sessionSvc, userSvc),
 
@@ -56,6 +62,8 @@ func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Ser
 			assessmentSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
 		dashboardHandler: dashboardhandler.New(dashboardSvc, authSvc, authConfig),
+
+		adminHandler: adminhandler.New(adminSvc, authSvc, authConfig),
 	}
 }
 
@@ -103,6 +111,8 @@ func (s Service) Server() {
 	s.assessmentHandler.SetAssessmentRoute(e)
 
 	s.dashboardHandler.SetDashboardRoutes(e)
+
+	s.adminHandler.SetAdminRoutes(e)
 
 	// s.commitmentHandler.SetCommitmentRoute(e)
 
