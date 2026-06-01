@@ -12,7 +12,6 @@
     
     COPY . .
     
-    # بیلد با مسیر درست cmd/main.go
     RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main ./cmd/main.go
     
     # -----------------------------
@@ -24,9 +23,11 @@
     
     COPY --from=builder /app/main .
     
-    # اگر migration و data داری (اختیاری)
-    COPY --from=builder /app/migrations ./migrations 2>/dev/null || true
-    COPY --from=builder /app/data ./data 2>/dev/null || true
+    # کپی migrations (با مسیر کامل)
+    COPY --from=builder /app/internal/repository/postgres/migrations ./migrations
+    
+    # کپی data (فایل‌های JSON)
+    COPY --from=builder /app/data ./data
     
     EXPOSE 8086
     
