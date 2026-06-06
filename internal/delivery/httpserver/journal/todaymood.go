@@ -3,6 +3,7 @@ package journalhandler
 import (
 	"aramina/internal/pkg/claims"
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -11,6 +12,8 @@ import (
 func (h Handler) TodayMood(c echo.Context) error {
 
 	const op = "journalhandler.TodayMood"
+
+	fmt.Println(op, "today ommm")
 
 	claims, err := claims.GetClaims(c)
 	if err != nil {

@@ -12,8 +12,10 @@ import (
 func (h Handler) DashboardStats(c echo.Context) error {
 	const op = "dashboardhandler.DashboardStats"
 
-	fmt.Println(op, "ressmild")
+	fmt.Println(op, "claimsclaimsclaims")
+
 	claims, err := claims.GetClaims(c)
+
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]string{
 			"message": "احراز هویت ناموفق",

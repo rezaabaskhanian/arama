@@ -4,6 +4,7 @@ import (
 	"aramina/internal/pkg/claims"
 	"aramina/internal/pkg/richerror"
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -22,6 +23,8 @@ func (h Handler) SubmitAnswer(c echo.Context) error {
 		AssessmentID string         `json:"assessment_id"`
 		Answers      map[string]int `json:"answers"`
 	}
+
+	fmt.Println(req, "req submit assesments")
 
 	if err := c.Bind(&req); err != nil {
 		return richerror.New(op).WithErr(err).WithMessage("dont get answers in front")
