@@ -30,7 +30,11 @@ func (s Service) GetDashboardStats(ctx context.Context, userID string, traumaTyp
 	lastAssessmentDate := ""
 	traumaTypeAssessment := ""
 	if err == nil {
-		lastAssessmentDate = latestAssessment.CompletedAt.Format("2006/01/02")
+		// CompletedAt یک *time.Time است؛ برای کاربری که تست را کامل نکرده nil است
+		// و بدون این بررسی، Format باعث panic (nil pointer) و خطای ۵۰۰ می‌شود.
+		if latestAssessment.CompletedAt != nil {
+			lastAssessmentDate = latestAssessment.CompletedAt.Format("2006/01/02")
+		}
 		traumaTypeAssessment = latestAssessment.TraumaType
 	}
 
