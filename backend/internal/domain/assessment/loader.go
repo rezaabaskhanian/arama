@@ -2,6 +2,7 @@ package assessment
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"sync"
 )
@@ -11,34 +12,36 @@ type QuestionsData struct {
 }
 
 var (
-	onceQuestions   sync.Once
+	questionsMu     sync.Mutex
 	cachedQuestions *QuestionsData
 )
 
-// loadQuestionsFromJSON بارگذاری سوالات از فایل JSON با کش
+// loadQuestionsFromJSON بارگذاری سوالات از فایل JSON با کش امن.
+// نکته: کش فقط در صورت موفقیت پر می‌شود؛ در صورت خطا (مثلاً مسیر اشتباه)
+// حالت خراب کش نمی‌شود تا با اصلاح مسیر بتوان دوباره تلاش کرد.
 func loadQuestionsFromJSON(filePath string) (*QuestionsData, error) {
-	var data QuestionsData
-	var err error
+	questionsMu.Lock()
+	defer questionsMu.Unlock()
 
-	onceQuestions.Do(func() {
-		file, openErr := os.Open(filePath)
-		if openErr != nil {
-			err = openErr
-			return
-		}
-		defer file.Close()
+	if cachedQuestions != nil {
+		return cachedQuestions, nil
+	}
 
-		decodeErr := json.NewDecoder(file).Decode(&data)
-		if decodeErr != nil {
-			err = decodeErr
-			return
-		}
-		cachedQuestions = &data
-	})
-
+	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
+
+	var data QuestionsData
+	if err := json.NewDecoder(file).Decode(&data); err != nil {
+		return nil, err
+	}
+	if len(data.Questions) == 0 {
+		return nil, errors.New("فایل سوالات خالی است یا خوانده نشد")
+	}
+
+	cachedQuestions = &data
 	return cachedQuestions, nil
 }
 
@@ -47,6 +50,9 @@ func GetAllQuestions(filePath string) ([]Question, error) {
 	data, err := loadQuestionsFromJSON(filePath)
 	if err != nil {
 		return nil, err
+	}
+	if data == nil {
+		return nil, errors.New("سوالات در دسترس نیست")
 	}
 	return data.Questions, nil
 }

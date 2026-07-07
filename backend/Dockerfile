@@ -29,8 +29,9 @@
     # کپی data (فایل‌های JSON)
     COPY --from=builder /app/data ./data
 
-    # مسیر migration داخل ایمیج (متناسب با محل کپی بالا)
+    # مسیرهای فایل داخل ایمیج (متناسب با محل کپی بالا)
     ENV MIGRATIONS_DIR=./migrations
+    ENV QUESTIONS_FILE=./data/questions.json
 
     EXPOSE 8086
 
