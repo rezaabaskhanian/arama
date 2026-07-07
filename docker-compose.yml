@@ -1,20 +1,64 @@
-
-
-
+# ============================================================
+# آرامینا — docker-compose برای دیپلوی روی VPS
+# سه سرویس: postgres + backend (Go) + frontend (Next.js)
+# مقادیر حساس از فایل .env در همین پوشه خوانده می‌شوند.
+# ============================================================
 
 services:
   postgres:
-    image: postgres:15
-    container_name: Mental_Health_postgres
-    restart: always
+    image: postgres:15-alpine
+    container_name: aramina_postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: reza_abasi
-      POSTGRES_PASSWORD: r1367R1367
-      POSTGRES_DB: mental_health_db
-    ports:
-      - "5431:5432"
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # پورت را فقط اگر لازم داری از بیرون باز کن؛ در حالت پیش‌فرض فقط شبکه‌ی داخلی
+    # ports:
+    #   - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: aramina_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENV: production
+      RUN_MIGRATIONS: "true"
+      LOG_LEVEL: info
+      HTTP_PORT: 8086
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SIGN_KEY: ${JWT_SIGN_KEY}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      MIGRATIONS_DIR: ./migrations
+    ports:
+      - "8086:8086"
+
+  frontend:
+    build:
+      context: ./frontend/mental-health-trauma
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: aramina_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
 
 volumes:
   postgres_data:

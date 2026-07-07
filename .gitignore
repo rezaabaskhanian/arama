@@ -1,0 +1,29 @@
+# ============================================================
+# آرامینا — gitignore ریشه (Monorepo)
+# ============================================================
+
+# --- عمومی ---
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# --- بک‌اند (Go) ---
+backend/bin/
+backend/main
+backend/coverage.out
+backend/*.test
+
+# --- فرانت‌اند (Next.js) ---
+frontend/mental-health-trauma/node_modules/
+frontend/mental-health-trauma/.next/
+frontend/mental-health-trauma/out/
+frontend/mental-health-trauma/build/
+frontend/mental-health-trauma/.vercel/
+frontend/mental-health-trauma/*.tsbuildinfo
+frontend/mental-health-trauma/next-env.d.ts
+
+# --- IDE ---
+.idea/
+.vscode/
