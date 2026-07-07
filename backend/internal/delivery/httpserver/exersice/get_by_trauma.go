@@ -21,7 +21,9 @@ func (h Handler) GetExerciseByTrauma(c echo.Context) error {
 	res, err := h.exerciseSvc.GetExercisByTraumaType(context.Background(), req)
 
 	if err != nil {
-		richerror.New(op).WithErr(err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": richerror.New(op).WithErr(err).Error(),
+		})
 	}
 
 	return c.JSON(http.StatusOK, res)

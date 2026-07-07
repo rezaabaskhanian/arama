@@ -84,9 +84,10 @@ func (e DB) FindExercisesByTraumaType(ctx context.Context, traumaType string) ([
 	// WHERE trauma_type = $1 AND is_active = true
 	// ORDER BY order_index ASC
 	// `
+	// COALESCE برای media_url چون در بیشتر تمرین‌ها NULL است و اسکن NULL در string خطا می‌دهد
 	query := `
-    SELECT 
-        id, title, description, trauma_type, media_url, 
+    SELECT
+        id, title, description, trauma_type, COALESCE(media_url, ''),
         duration, order_index, is_active, created_at
     FROM exercises
     WHERE trauma_type = $1 AND is_active = true
@@ -140,15 +141,15 @@ func (e DB) FindExerciseByID(ctx context.Context, id string) (*domain.Exercise, 
 	const op = "postgresexercise.FindExerciseByID"
 
 	query := `
-        SELECT 
-            id, 
-            title, 
-            description, 
-            trauma_type, 
-            media_url, 
-            duration, 
-            order_index, 
-            is_active, 
+        SELECT
+            id,
+            title,
+            description,
+            trauma_type,
+            COALESCE(media_url, ''),
+            duration,
+            order_index,
+            is_active,
             created_at
         FROM exercises
         WHERE id = $1 AND is_active = true
