@@ -1,10 +1,10 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import BottomNav from './BottomNav';
-import SosButton from '@/components/crisis/SosButton';
+import TopNav from './TopNav';
+import KindNotifications from './KindNotifications';
 
-// مسیرهایی که ناوبری/SOS نباید نمایش داده شود
+// مسیرهایی که ناوبری نباید نمایش داده شود
 const HIDDEN_PREFIXES = ['/login', '/register', '/reset-password', '/admin'];
 
 export default function AppChrome() {
@@ -15,8 +15,8 @@ export default function AppChrome() {
 
   return (
     <>
-      <SosButton />
-      <BottomNav />
+      <TopNav />
+      <KindNotifications />
     </>
   );
 }

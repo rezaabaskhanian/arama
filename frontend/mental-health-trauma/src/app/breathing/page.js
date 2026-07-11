@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { ArrowRight, Wind, Play, Square, Pause } from 'lucide-react';
 import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
+import { startAmbient, stopAmbient, readSavedVolume } from '@/lib/ambientSound';
 
 export default function BreathingPage() {
   const [isActive, setIsActive] = useState(false);
@@ -41,6 +42,13 @@ export default function BreathingPage() {
     return () => clearInterval(interval);
   }, [isActive]);
 
+  // صدای محیطی امواج آلفا: هنگام فعال‌بودن تمرین پخش، در غیر این‌صورت خاموش
+  useEffect(() => {
+    if (isActive) startAmbient(readSavedVolume());
+    else stopAmbient();
+    return () => stopAmbient();
+  }, [isActive]);
+
   const toggleExercise = () => {
     if (!isActive) {
       setPhase('inhale');
@@ -70,7 +78,7 @@ export default function BreathingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 selection:bg-teal-100" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 py-12 px-4 selection:bg-brand-100" dir="rtl">
       <DecorativeBlobs />
       
       <div className="max-w-2xl mx-auto relative z-10 space-y-8">
@@ -78,7 +86,7 @@ export default function BreathingPage() {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-              <div className="bg-gradient-to-tr from-cyan-500 to-teal-500 p-2.5 rounded-2xl text-white shadow-lg shadow-teal-200">
+              <div className="bg-gradient-to-tr from-brand-500 to-brand-700 p-2.5 rounded-2xl text-white shadow-lg shadow-brand-200">
                 <Wind className="w-6 h-6" />
               </div>
               تنفس مربعی (۴-۴-۴-۴)
@@ -96,18 +104,18 @@ export default function BreathingPage() {
         {/* Breathing Circle */}
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/60 backdrop-blur-xl border border-white/80 shadow-2xl shadow-slate-200 rounded-[3rem] p-12 text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[500px]">
           
-          <div className="absolute top-8 right-8 bg-teal-50 text-teal-600 px-4 py-2 rounded-xl text-sm font-black border border-teal-100 shadow-sm">
+          <div className="absolute top-8 right-8 bg-brand-50 text-brand-600 px-4 py-2 rounded-xl text-sm font-black border border-brand-100 shadow-sm">
             چرخه‌ها: {cycles}
           </div>
 
           <div className="relative w-64 h-64 flex items-center justify-center my-8">
             <motion.div
               animate={getCircleAnimation()}
-              className="absolute w-48 h-48 bg-gradient-to-tr from-teal-400 to-cyan-400 rounded-full blur-xl opacity-50"
+              className="absolute w-48 h-48 bg-gradient-to-tr from-brand-400 to-brand-300 rounded-full blur-xl opacity-50"
             />
             <motion.div
               animate={getCircleAnimation()}
-              className="absolute w-48 h-48 bg-gradient-to-tr from-teal-500 to-cyan-500 rounded-full shadow-2xl flex items-center justify-center z-10"
+              className="absolute w-48 h-48 bg-gradient-to-tr from-brand-500 to-brand-700 rounded-full shadow-2xl flex items-center justify-center z-10"
             >
               {isActive ? (
                 <span className="text-white text-5xl font-black tabular-nums">{timer}</span>

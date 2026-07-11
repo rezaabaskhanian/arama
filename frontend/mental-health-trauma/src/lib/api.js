@@ -510,7 +510,13 @@ export async function adminDeleteExercise(id) {
 export async function getCommitmentTemplates() {
   try {
     const response = await apiClient.get('/commitments/templates');
-    return response.data.templates || [];
+    const data = response.data || {};
+    return {
+      templates: data.templates || [],
+      unlocked: !!data.unlocked,
+      completedExercises: data.completed_exercises || 0,
+      requiredExercises: data.required_exercises || 0,
+    };
   } catch (error) {
     throw new Error(error.response?.data?.message || 'خطا در دریافت تمرین‌ها');
   }
@@ -595,4 +601,75 @@ export async function adminUpdateCommitmentTemplate(id, data) {
 export async function adminDeleteCommitmentTemplate(id) {
   const response = await apiClient.delete(`/admin/commitment-templates/${id}`);
   return response.data;
+}
+
+
+// ========== Psychologist Supervision (نظارت روانشناس) ==========
+
+// وضعیت نظارت + پیام‌های کاربر
+export async function getSupervisionStatus() {
+  try {
+    const response = await apiClient.get('/supervision/status');
+    return response.data; // { wants_supervision, messages: [] }
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در دریافت وضعیت نظارت');
+  }
+}
+
+// روشن/خاموش کردن درخواست نظارت
+export async function toggleSupervision(wants) {
+  try {
+    const response = await apiClient.post('/supervision/toggle', { wants });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در ذخیره‌ی تنظیمات');
+  }
+}
+
+// پیام‌های روانشناس برای کاربر
+export async function getSupervisionMessages() {
+  try {
+    const response = await apiClient.get('/supervision/messages');
+    return response.data.messages || [];
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در دریافت پیام‌ها');
+  }
+}
+
+// --- سمت روانشناس/ادمین ---
+
+export async function adminGetSupervisedUsers() {
+  try {
+    const response = await apiClient.get('/admin/supervision/users');
+    return response.data.users || [];
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در دریافت کاربران');
+  }
+}
+
+export async function adminGetUserSupervisionMessages(userId) {
+  try {
+    const response = await apiClient.get(`/admin/supervision/users/${userId}/messages`);
+    return response.data.messages || [];
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در دریافت پیام‌ها');
+  }
+}
+
+export async function adminSendSupervisionMessage(userId, body) {
+  try {
+    const response = await apiClient.post(`/admin/supervision/users/${userId}/messages`, { body });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در ارسال پیام');
+  }
+}
+
+export async function adminRunSupervisionFallback() {
+  try {
+    const response = await apiClient.post('/admin/supervision/run-fallback');
+    return response.data; // { sent }
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در اجرای پیام‌های خودکار');
+  }
 }
