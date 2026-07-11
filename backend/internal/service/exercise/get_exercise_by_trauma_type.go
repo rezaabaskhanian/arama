@@ -18,9 +18,39 @@ func (s Service) GetExercisByTraumaType(ctx context.Context, req dto.GetByTrauma
 	if err != nil {
 		return []dto.GetByTraumaTypeResponse{}, richerror.New(op).WithErr(err).WithMessage("مشکل در ساخت ورزش جدید")
 	}
+
+	// اگر کاربر لاگین کرده باشد، وضعیت تکمیل و قفل هر تمرین را محاسبه می‌کنیم.
+	var completed map[string]bool
+	completedToday := false
+	if req.UserID != "" {
+		completed, err = s.repo.FindCompletedExerciseIDsByUser(ctx, req.UserID)
+		if err != nil {
+			return []dto.GetByTraumaTypeResponse{}, richerror.New(op).WithErr(err)
+		}
+
+		lastDate, err := s.repo.GetLastUserExerciseDate(ctx, req.UserID)
+		if err != nil {
+			return []dto.GetByTraumaTypeResponse{}, richerror.New(op).WithErr(err)
+		}
+		completedToday = lastDate != nil && isTodayTehran(*lastDate)
+	}
+
+	// اندیس تمرینِ بعدی در نوبت (اولین تکمیل‌نشده). فقط همین یکی «باز» است،
+	// آن هم به شرطی که کاربر امروز تمرینی انجام نداده باشد.
+	next := nextUnlockIndex(res, completed)
+
 	result := make([]dto.GetByTraumaTypeResponse, 0, len(res))
 
-	for _, ex := range res {
+	for i, ex := range res {
+		isCompleted := completed[string(ex.ID)]
+
+		// قفل است اگر تکمیل نشده و یا نوبتش نیست یا امروز تمرین انجام شده.
+		// برای مهمان (بدون userID) هیچ چیزی قفل نمی‌شود.
+		isLocked := false
+		if req.UserID != "" && !isCompleted {
+			isLocked = i != next || completedToday
+		}
+
 		result = append(result, dto.GetByTraumaTypeResponse{
 			ExerciseInfo: dto.ExerciseInfo{
 				ID:          string(ex.ID),
@@ -31,9 +61,11 @@ func (s Service) GetExercisByTraumaType(ctx context.Context, req dto.GetByTrauma
 				Duration:    ex.Duration,
 				Order:       ex.Order,
 				IsActive:    ex.IsActive,
+				IsCompleted: isCompleted,
+				IsLocked:    isLocked,
 			},
 		})
 	}
 
-	return result, err
+	return result, nil
 }

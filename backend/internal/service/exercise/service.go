@@ -25,6 +25,7 @@ type Repository interface {
 	CountTotalExercies(ctx context.Context, traumaType string) (int, error)
 	CountUserCompletedExercises(ctx context.Context, userID string) (int, error)
 	IsExerciseCompletedByUser(ctx context.Context, userID string, exerciseID string) (bool, error)
+	FindCompletedExerciseIDsByUser(ctx context.Context, userID string) (map[string]bool, error)
 
 	GetLastUserExerciseDate(ctx context.Context, userID string) (*time.Time, error)
 

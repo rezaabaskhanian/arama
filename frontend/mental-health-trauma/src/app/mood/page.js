@@ -27,7 +27,7 @@ export default function MoodPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 selection:bg-teal-100" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 py-12 px-4 selection:bg-brand-100" dir="rtl">
       <DecorativeBlobs />
       
       <div className="max-w-2xl mx-auto relative z-10 space-y-8">
@@ -35,7 +35,7 @@ export default function MoodPage() {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-              <div className="bg-gradient-to-tr from-indigo-500 to-purple-500 p-2.5 rounded-2xl text-white shadow-lg shadow-indigo-200">
+              <div className="bg-gradient-to-tr from-brand-500 to-brand-700 p-2.5 rounded-2xl text-white shadow-lg shadow-brand-200">
                 <Smile className="w-6 h-6" />
               </div>
               پایش احساسات

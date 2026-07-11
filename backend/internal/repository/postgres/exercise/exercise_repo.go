@@ -196,6 +196,30 @@ func (e DB) CountUserCompletedExercises(ctx context.Context, userID string) (int
 	return count, err
 }
 
+// FindCompletedExerciseIDsByUser مجموعه‌ی شناسه‌ی تمرین‌هایی که کاربر تکمیل کرده را برمی‌گرداند
+func (e DB) FindCompletedExerciseIDsByUser(ctx context.Context, userID string) (map[string]bool, error) {
+	const op = "postgresexercise.FindCompletedExerciseIDsByUser"
+
+	query := `SELECT exercise_id FROM user_exercises WHERE user_id = $1`
+
+	rows, err := e.conn.Query(ctx, query, userID)
+	if err != nil {
+		return nil, richerror.New(op).WithErr(err).WithMessage("failed to query completed exercises")
+	}
+	defer rows.Close()
+
+	completed := make(map[string]bool)
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, richerror.New(op).WithErr(err)
+		}
+		completed[id] = true
+	}
+
+	return completed, nil
+}
+
 func (e DB) IsExerciseCompletedByUser(ctx context.Context, userID string, exerciseID string) (bool, error) {
 	const op = "postgresexercise.IsExerciseCompletedByUser"
 

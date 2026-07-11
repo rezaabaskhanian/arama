@@ -22,9 +22,14 @@ func (h Handler) DashboardStats(c echo.Context) error {
 		})
 	}
 
-	traumaType := c.QueryParam("traumaType")
+	traumaType := c.Param("traumaType")
 
 	res, err := h.dashboardSvc.GetDashboardStats(context.Background(), claims.UserID, traumaType)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"message": "خطا در دریافت اطلاعات داشبورد",
+		})
+	}
 
 	return c.JSON(http.StatusOK, res)
 }

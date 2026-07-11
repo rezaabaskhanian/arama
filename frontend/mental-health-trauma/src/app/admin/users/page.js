@@ -75,7 +75,7 @@ export default function AdminUsersPage() {
       default:
         return {
           text: 'کاربر عادی',
-          color: 'bg-blue-50 text-blue-600 border-blue-100',
+          color: 'bg-violet-50 text-violet-600 border-violet-100',
           icon: <UserIcon className="w-3 h-3" />
         };
     }
@@ -84,7 +84,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
-        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+        <Loader2 className="w-12 h-12 text-violet-500 animate-spin" />
         <p className="text-slate-400 font-bold">در حال بارگذاری کاربران...</p>
       </div>
     );
@@ -95,7 +95,7 @@ export default function AdminUsersPage() {
       {/* Header & Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100">
+          <div className="w-14 h-14 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-violet-100">
             <UserCog className="w-7 h-7" />
           </div>
           <div>
@@ -106,18 +106,18 @@ export default function AdminUsersPage() {
 
         <div className="flex items-center gap-3">
           <div className="relative group">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-violet-500 transition-colors" />
             <input
               type="text"
               placeholder="جستجو کاربر..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pr-11 pl-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all w-full sm:w-64"
+              className="pr-11 pl-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-violet-500/5 focus:border-violet-500 outline-none transition-all w-full sm:w-64"
             />
           </div>
           <button
             onClick={fetchUsers}
-            className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-indigo-500 hover:shadow-lg transition-all"
+            className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-violet-500 hover:shadow-lg transition-all"
           >
             <RefreshCcw className="w-5 h-5" />
           </button>
@@ -192,7 +192,7 @@ export default function AdminUsersPage() {
                               value={user.role}
                               onChange={(e) => handleRoleChange(user.id, e.target.value)}
                               disabled={updating === user.id}
-                              className="appearance-none bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 transition-all cursor-pointer pr-8"
+                              className="appearance-none bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-4 focus:ring-violet-500/5 focus:border-violet-200 transition-all cursor-pointer pr-8"
                             >
                               <option value="user">کاربر عادی</option>
                               <option value="helper">همیار</option>
@@ -202,7 +202,7 @@ export default function AdminUsersPage() {
                           </div>
 
                           {updating === user.id && (
-                            <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
+                            <Loader2 className="w-4 h-4 text-violet-500 animate-spin" />
                           )}
                         </div>
                       </td>

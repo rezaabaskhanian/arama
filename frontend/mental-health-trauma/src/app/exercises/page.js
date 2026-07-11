@@ -1,286 +1,262 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'motion/react';
-import { getExercisesByTraumaType, getUserProgress } from '@/lib/api';
-import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
-import {
-  Wind,
-  BrainCircuit,
-  Search,
-  Eye,
-  PenTool,
-  Heart,
-  Anchor,
-  Shield,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
-  LayoutGrid,
-  CheckCircle2,
-  Clock,
-  ExternalLink
-} from 'lucide-react';
+import { motion } from 'motion/react';
+import { getExercisesByTraumaType, getUserProgress, getLatestAssessment } from '@/lib/api';
+import { Search, Plus, Sparkles, Lock, Clock, ChevronLeft, Heart, LayoutGrid, Loader2, ClipboardList } from 'lucide-react';
+
+const IMAGES = ['/ex/1.jpg', '/ex/2.jpg', '/ex/3.jpg', '/ex/4.jpg', '/ex/5.jpg', '/ex/6.jpg'];
+
+// دسته‌بندی‌ها (فیلتر سمتِ کلاینت بر اساس کلیدواژه در عنوان/توضیح)
+const CATEGORIES = [
+  { key: 'all', label: 'همه تمرین‌ها', kw: [] },
+  { key: 'trauma', label: 'تروما', kw: ['تروما', 'لنگر', 'جعبه', 'ایمن', 'فلاش'] },
+  { key: 'calm', label: 'آرامش', kw: ['آرام', 'تنفس', 'یوگا', 'ریلکس', 'مدیتیشن'] },
+  { key: 'anxiety', label: 'اضطراب', kw: ['اضطراب', 'استرس', '۵-۴-۳', 'ترس'] },
+  { key: 'focus', label: 'تمرکز', kw: ['تمرکز', 'اسکن', 'ذهن', 'حضور'] },
+  { key: 'sleep', label: 'خواب', kw: ['خواب', 'شب', 'آرام‌سازی'] },
+];
+
+const TRAUMA_LABELS = { mild: 'ترومای خفیف', moderate: 'ترومای متوسط', severe: 'ترومای شدید', complex: 'ترومای پیچیده' };
+
+const difficulty = (d) => (d <= 10 ? 'ساده' : d <= 18 ? 'متوسط' : 'پیشرفته');
 
 export default function ExercisesPage() {
   const [exercises, setExercises] = useState([]);
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [traumaType, setTraumaType] = useState('mild');
-  const [expandedId, setExpandedId] = useState(null);
+  const [query, setQuery] = useState('');
+  const [cat, setCat] = useState('all');
+  const [gated, setGated] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    (async () => {
+      try {
+        setLoading(true);
+        // گیت ارزیابی: بدون ارزیابیِ کامل‌شده هیچ تمرینی باز نمی‌شود
+        const latest = await getLatestAssessment();
+        const t = latest?.trauma_type || localStorage.getItem('traumaType');
+        if (!t) {
+          setGated(true);
+          return;
+        }
+        if (latest?.trauma_type) localStorage.setItem('traumaType', latest.trauma_type);
+        setTraumaType(t);
+        const [ex, prog] = await Promise.all([getExercisesByTraumaType(t), getUserProgress(t)]);
+        setExercises(ex || []);
+        setProgress(prog || {});
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const savedTraumaType = localStorage.getItem('traumaType') || 'mild';
-      setTraumaType(savedTraumaType);
-      const exercisesData = await getExercisesByTraumaType(savedTraumaType);
-      setExercises(exercisesData);
-      const progressData = await getUserProgress(savedTraumaType);
-      setProgress(progressData);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filtered = useMemo(() => {
+    const c = CATEGORIES.find((x) => x.key === cat);
+    return exercises.filter((e) => {
+      const info = e.exercise_info || e;
+      const hay = `${info.title || ''} ${info.description || ''}`;
+      const matchQ = !query.trim() || hay.includes(query.trim());
+      const matchC = cat === 'all' || (c && c.kw.some((k) => hay.includes(k)));
+      return matchQ && matchC;
+    });
+  }, [exercises, query, cat]);
 
-  const getTraumaTypeLabel = (type) => {
-    const labels = {
-      mild: 'ترومای خفیف',
-      moderate: 'ترومای متوسط',
-      severe: 'ترومای شدید',
-      complex: 'ترومای پیچیده'
-    };
-    return labels[type] || 'نامشخص';
-  };
-
-  const toggleDescription = (id) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
+  const traumaLabel = TRAUMA_LABELS[traumaType] || 'نامشخص';
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden" dir="rtl">
-        <DecorativeBlobs />
-        <div className="relative z-10 text-center space-y-4">
-          <div className="w-16 h-16 bg-white/50 backdrop-blur-xl rounded-[2rem] flex items-center justify-center shadow-xl border border-white/50 mx-auto animate-pulse">
-            <LayoutGrid className="w-8 h-8 text-blue-500 animate-spin" />
-          </div>
-          <p className="text-slate-500 font-bold">در حال بارگذاری تمرین‌ها...</p>
-        </div>
+      <div className="min-h-screen bg-surface flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-10 h-10 text-brand-500 animate-spin" />
       </div>
     );
   }
 
-  const progressPercent = progress?.progress_percent || 0;
-  const traumaTypeLabel = getTraumaTypeLabel(traumaType);
-
-  const getExerciseIcon = (title) => {
-    const icons = {
-      'تنفس عمیق': <Wind className="w-6 h-6" />,
-      'اسکن بدن': <Search className="w-6 h-6" />,
-      'تکنیک ۵-۴-۳-۲-۱': <Eye className="w-6 h-6" />,
-      'نوشتن احساسات': <PenTool className="w-6 h-6" />,
-      'جعبه ایمن': <Shield className="w-6 h-6" />,
-      'تمرین لنگر': <Anchor className="w-6 h-6" />,
-      'مدیتیشن هدایت‌شده': <BrainCircuit className="w-6 h-6" />,
-    };
-    return icons[title] || <Sparkles className="w-6 h-6" />;
-  };
+  if (gated) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center px-6" dir="rtl">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-100 p-10 sm:p-14 text-center max-w-lg space-y-5"
+        >
+          <span className="w-20 h-20 rounded-[2rem] bg-brand-50 text-brand-500 flex items-center justify-center mx-auto">
+            <Lock className="w-10 h-10" />
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900">ابتدا ارزیابی را انجام بده</h1>
+          <p className="text-sm font-bold text-slate-500 leading-relaxed">
+            تمرین‌های شفابخش بر اساس سطح ترومای تو شخصی‌سازی می‌شوند. تا وقتی ارزیابی وضعیت را کامل نکرده‌ای،
+            هیچ تمرینی باز نمی‌شود. این اولین و مهم‌ترین قدم مسیر توست.
+          </p>
+          <Link
+            href="/assessment"
+            className="btn-accent inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl font-black shadow-lg shadow-accent-500/20"
+          >
+            <ClipboardList className="w-5 h-5" />
+            شروع ارزیابی
+          </Link>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 pb-20 relative overflow-hidden" dir="rtl">
-      <DecorativeBlobs />
-
-      <motion.main
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 max-w-2xl mx-auto px-4 pt-12 space-y-8"
-      >
-        {/* هدر */}
-        <div className="text-center space-y-3">
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            className="inline-flex p-4 bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/50 text-blue-500 mb-2"
+    <div className="min-h-screen bg-surface text-slate-800 pb-24 selection:bg-brand-100" dir="rtl">
+      <main className="max-w-6xl mx-auto px-6 sm:px-10 pt-10 space-y-8">
+        {/* جست‌وجو + ایجاد تکنیک */}
+        <div className="flex flex-wrap gap-4">
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="جست‌وجوی تمرین، تکنیک تنفس یا مدیتیشن تروما..."
+              className="w-full bg-white rounded-[1.5rem] border border-slate-100 shadow-lg shadow-slate-100 pr-14 pl-6 py-5 font-bold text-slate-700 placeholder:text-slate-300 focus:outline-none focus:border-brand-300 focus:ring-4 focus:ring-brand-100 transition-all"
+            />
+          </div>
+          <Link
+            href="/commitments"
+            className="btn-accent inline-flex items-center gap-2 rounded-[1.5rem] px-7 font-black shadow-lg shadow-accent-500/20 shrink-0"
           >
-            <BrainCircuit className="w-10 h-10" />
-          </motion.div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">تمرین‌های شفابخش</h1>
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">مناسب برای:</span>
-            <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-xs font-black">{traumaTypeLabel}</span>
+            <Plus className="w-5 h-5" />
+            ایجاد تکنیک شخصی مراجع
+          </Link>
+        </div>
+
+        {/* دسته‌ها */}
+        <div className="flex flex-wrap gap-3">
+          {CATEGORIES.map((c) => {
+            const active = cat === c.key;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setCat(c.key)}
+                className={`px-6 py-3 rounded-full text-sm font-black transition-all ${
+                  active ? 'bg-brand-900 text-white shadow-lg shadow-brand-900/20' : 'bg-white text-slate-500 hover:text-brand-600 border border-slate-100'
+                }`}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* قانون پایش زنجیره‌ای */}
+        <div className="bg-white/60 border border-white/80 rounded-[2rem] p-6 flex items-start gap-5 shadow-sm">
+          <span className="shrink-0 text-brand-500">
+            <Sparkles className="w-7 h-7" />
+          </span>
+          <div>
+            <p className="font-black text-slate-800 mb-1.5">قانون پایش زنجیره‌ای خودمراقبتی آرامینا:</p>
+            <p className="text-sm font-medium text-slate-500 leading-relaxed">
+              تکنیک‌ها به گونه‌ای زنجیره‌ای و پایش‌یافته طراحی شده‌اند تا بار روحی به سیستم عصبی شما تحمیل نشود. با کلیک بر روی هر تمرین آزاد
+              و فشردن دکمه‌ی «اتمام تمرین»، تمرین به عنوان انجام‌شده ثبت شده و تکنیک بعد به صورت خودکار باز می‌گردد.
+            </p>
           </div>
         </div>
 
-        {/* کارت پیشرفت هوشمند */}
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          className="relative overflow-hidden bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-blue-900/20"
-        >
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
-          <div className="relative z-10 flex flex-col gap-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-xs font-bold text-blue-100 uppercase tracking-widest mb-1">مسیر یادگیری شما</p>
-                <h2 className="text-3xl font-black">{progressPercent}% کامل شده</h2>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-black border border-white/20 whitespace-nowrap">
-                {progress?.completed_exercises || 0} از {progress?.total_exercises || 0} تمرین
-              </div>
+        {/* گرید تمرین‌ها */}
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-16 text-center">
+            <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4">
+              <LayoutGrid className="w-8 h-8" />
             </div>
-
-            <div className="relative h-4 bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/5">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
-                className="h-full bg-gradient-to-r from-teal-300 to-emerald-400 rounded-full shadow-lg"
-              />
-            </div>
-
-            <p className="text-sm font-medium text-blue-50 leading-relaxed text-center">
-              {progressPercent === 0 && '✨ برای شروع سفر بهبودی، اولین تمرین را انتخاب کنید.'}
-              {progressPercent > 0 && progressPercent < 100 && '🌱 با هر تمرین، به آرامش درونی نزدیک‌تر می‌شوید. ادامه دهید!'}
-              {progressPercent === 100 && '🏆 تبریک! شما تمام تمرین‌های این مرحله را با موفقیت انجام دادید.'}
-            </p>
+            <p className="text-slate-500 font-bold">تمرینی با این فیلتر پیدا نشد.</p>
           </div>
-        </motion.div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((exercise, index) => {
+              const info = exercise.exercise_info || exercise;
+              const completed = info.is_completed;
+              const locked = info.is_locked;
+              const img = IMAGES[index % IMAGES.length];
+              return (
+                <motion.div
+                  key={info.id || index}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="group bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 overflow-hidden flex flex-col"
+                >
+                  {/* تصویر */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={img}
+                      alt=""
+                      className={`w-full h-full object-cover transition-all duration-500 ${
+                        locked ? 'grayscale blur-[2px] scale-105' : 'group-hover:scale-105'
+                      }`}
+                    />
+                    {locked && <div className="absolute inset-0 bg-slate-500/30" />}
+                    {completed && !locked && (
+                      <span className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-lg">
+                        <Heart className="w-4 h-4 text-accent-500 fill-current" />
+                      </span>
+                    )}
+                    {locked ? (
+                      <>
+                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
+                          <Lock className="w-6 h-6 text-slate-500" />
+                        </span>
+                        <span className="absolute bottom-4 right-4 bg-slate-700/80 text-white text-[11px] font-black px-3 py-1.5 rounded-full backdrop-blur-sm">
+                          قفل (فردا باز می‌شود)
+                        </span>
+                      </>
+                    ) : (
+                      <span className="absolute bottom-4 left-4 btn-accent text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg">
+                        باز (آماده تمرین)
+                      </span>
+                    )}
+                  </div>
 
-        {/* لیست تمرین‌ها */}
-        <section className="space-y-5">
-          {exercises.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] p-12 text-center border border-white/50 shadow-xl"
-            >
-              <div className="w-20 h-20 bg-slate-50 text-slate-300 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6">
-                <LayoutGrid className="w-10 h-10" />
-              </div>
-              <p className="text-slate-500 font-bold mb-6">هنوز تمرینی برای شما آماده نشده است.</p>
-              <Link href="/assessment" className="inline-flex bg-gradient-to-tr from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-200">
-                شروع پایش وضعیت
-              </Link>
-            </motion.div>
-          ) : (
-            <div className="space-y-4">
-              {exercises.map((exercise, index) => {
-                const isExpanded = expandedId === exercise.id;
-                const icon = getExerciseIcon(exercise.exercise_info.title);
-
-                return (
-                  <motion.div
-                    key={exercise.exercise_info.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/80 shadow-xl hover:shadow-2xl hover:shadow-blue-900/5 transition-all duration-500 overflow-hidden"
-                  >
-                    <div className="p-6 sm:p-8">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                        <div className="flex items-center gap-5">
-                          <div className={`p-4 rounded-[1.5rem] shadow-inner transition-colors duration-500 ${exercise.exercise_info.is_completed ? 'bg-emerald-50 text-emerald-500' : 'bg-blue-50 text-blue-500'
-                            }`}>
-                            {icon}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-3 flex-wrap mb-1">
-                              <h3 className="font-black text-slate-900 text-lg leading-tight">
-                                {exercise.exercise_info.title}
-                              </h3>
-                              {exercise.exercise_info.is_completed && (
-                                <span className="bg-emerald-100/50 text-emerald-600 text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1">
-                                  <CheckCircle2 className="w-3 h-3" />
-                                  انجام شده
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-4 text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-                              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {exercise.exercise_info.duration} دقیقه</span>
-                              <span className="w-1 h-1 bg-slate-200 rounded-full" />
-                              <span>سطح: {traumaTypeLabel}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Link
-                          href={`/exercises/${exercise.exercise_info.id}`}
-                          className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl text-xs font-black shadow-lg transition-all flex items-center justify-center gap-2 ${exercise.is_completed
-                              ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
-                              : 'bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-blue-100 hover:shadow-blue-200 active:scale-95'
-                            }`}
-                        >
-                          {exercise.exercise_info.is_completed ? 'بازبینی تمرین' : 'شروع یادگیری'}
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                      </div>
-
-                      <button
-                        onClick={() => toggleDescription(exercise.id)}
-                        className="mt-6 text-[11px] font-black tracking-widest text-slate-400 hover:text-blue-500 transition-colors flex items-center gap-2 uppercase"
-                      >
-                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        <span>{isExpanded ? 'بستن جزئیات' : 'مشاهده راهنما و نکته‌ها'}</span>
-                      </button>
-
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="mt-6 p-6 bg-blue-50/50 border border-blue-100/50 rounded-[2rem] space-y-4">
-                              <h4 className="font-black text-blue-900 text-sm flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-blue-500" />
-                                راهنمای گام‌به‌گام
-                              </h4>
-                              <p className="text-slate-600 text-sm leading-relaxed font-medium">
-                                {exercise.description}
-                              </p>
-                              {exercise.exercise_info.description && (
-                                <div className="pt-4 border-t border-blue-100/50">
-                                  <p className="text-blue-700/70 text-[11px] leading-relaxed font-bold italic">
-                                    💡 {exercise.exercise_info.description}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                  {/* بدنه */}
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className={`text-lg font-black leading-tight ${locked ? 'text-slate-400' : 'text-slate-900'}`}>
+                        {info.title}
+                      </h3>
+                      <span className="shrink-0 bg-slate-100 text-slate-500 text-[10px] font-black px-2.5 py-1 rounded-lg">
+                        {difficulty(info.duration || 10)}
+                      </span>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                    <p className={`text-sm font-medium leading-relaxed mt-3 flex-1 ${locked ? 'text-slate-300' : 'text-slate-500'}`}>
+                      {info.description}
+                    </p>
 
-        {/* نقل قول انگیزشی سفارشی */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="bg-gradient-to-br from-amber-50/50 to-orange-50/50 backdrop-blur-md border border-amber-100/50 rounded-[2.5rem] p-8 text-center space-y-4 shadow-inner"
-        >
-          <div className="w-12 h-12 bg-amber-100 text-amber-500 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-            <Heart className="w-6 h-6 fill-current" />
+                    <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
+                        <Clock className="w-4 h-4" />
+                        {info.duration} دقیقه
+                      </span>
+                      {locked ? (
+                        <span className="text-[11px] font-black text-slate-300">تمرین قبلی را انجام دهید</span>
+                      ) : (
+                        <Link
+                          href={`/exercises/${info.id}`}
+                          className="inline-flex items-center gap-1 text-sm font-black text-brand-600 group-hover:gap-2 transition-all"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                          {completed ? 'بازبینی تمرین' : 'شروع تمرین'}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
-          <p className="text-amber-900/80 font-bold italic leading-relaxed max-w-sm mx-auto">
-            "🌈 هیچ قدمی برای بهبودی کوچک نیست. هر تمرینی که انجام می‌دهی، یک لایه جدید از آرامش در وجودت ساخته می‌شود."
-          </p>
-          <div className="h-0.5 w-12 bg-amber-200/50 mx-auto rounded-full" />
-        </motion.div>
-      </motion.main>
+        )}
+
+        <p className="text-center text-xs font-bold text-slate-400 pt-2">
+          سطح فعلی شما: <span className="text-brand-600">{traumaLabel}</span>
+          {' · '}
+          {progress?.completed_exercises || 0} از {progress?.total_exercises || 0} تمرین تکمیل شده
+        </p>
+      </main>
     </div>
   );
 }

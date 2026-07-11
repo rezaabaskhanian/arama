@@ -17,11 +17,15 @@ func (h Handler) CompletedExercises(c echo.Context) error {
 	var req dto.CompleteExrciseRequest
 
 	if err := c.Bind(&req); err != nil {
-		richerror.New(op).WithErr(err).WithMessage("مشکل در فرستادن ورودی")
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": richerror.New(op).WithErr(err).WithMessage("مشکل در فرستادن ورودی").Message(),
+		})
 	}
 	claims, err := claims.GetClaims(c)
 	if err != nil {
-		return richerror.New(op).WithErr(err)
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": "لطفا ابتدا وارد حساب کاربری خود شوید",
+		})
 	}
 	exerciseID := c.Param("exerciseID")
 
@@ -34,7 +38,9 @@ func (h Handler) CompletedExercises(c echo.Context) error {
 	completeExer, err := h.exerciseSvc.CompletedExercises(context.Background(), req)
 
 	if err != nil {
-		richerror.New(op).WithErr(err)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"message": richerror.New(op).WithErr(err).Message(),
+		})
 	}
 
 	return c.JSON(http.StatusOK, completeExer)

@@ -22,8 +22,8 @@ export default function RootLayout({ children }) {
       <body className="font-sans antialiased">
         <AuthProvider>
           <ToastProvider>
-            {children}
             <AppChrome />
+            {children}
           </ToastProvider>
         </AuthProvider>
       </body>

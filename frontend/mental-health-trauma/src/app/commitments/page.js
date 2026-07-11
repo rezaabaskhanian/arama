@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import Link from 'next/link';
 import {
   Users, HeartHandshake, Trees, Sun, Phone, Plane, HandHeart, Sparkles,
-  CheckCircle2, Clock, ArrowUpRight, Trash2, Target,
+  CheckCircle2, Clock, ArrowUpRight, Trash2, Target, Lock,
 } from 'lucide-react';
-import Header from '@/components/layout/Header';
 import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ const CATEGORY_META = {
   nature: { label: 'طبیعت', tone: 'calm', color: 'from-calm-400 to-calm-600' },
   family: { label: 'خانواده', tone: 'warm', color: 'from-warm-400 to-warm-500' },
   kindness: { label: 'نوع‌دوستی', tone: 'danger', color: 'from-pink-400 to-rose-500' },
-  travel: { label: 'سفر', tone: 'brand', color: 'from-indigo-400 to-purple-500' },
+  travel: { label: 'سفر', tone: 'brand', color: 'from-brand-400 to-brand-600' },
 };
 
 const MOODS = [
@@ -41,6 +41,7 @@ export default function CommitmentsPage() {
   const { toast } = useToast();
   const [tab, setTab] = useState('discover');
   const [templates, setTemplates] = useState([]);
+  const [gate, setGate] = useState({ unlocked: true, completedExercises: 0, requiredExercises: 0 });
   const [mine, setMine] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +59,8 @@ export default function CommitmentsPage() {
     try {
       setLoading(true);
       const [t, m] = await Promise.all([getCommitmentTemplates(), getMyCommitments()]);
-      setTemplates(t);
+      setTemplates(t.templates);
+      setGate({ unlocked: t.unlocked, completedExercises: t.completedExercises, requiredExercises: t.requiredExercises });
       setMine(m);
     } catch (err) {
       toast(err.message, 'error');
@@ -116,11 +118,14 @@ export default function CommitmentsPage() {
   const doneCount = mine.filter((m) => m.status === 'completed').length;
 
   return (
-    <div className="min-h-screen bg-surface text-slate-800 pb-32" dir="rtl">
+    <div className="min-h-screen bg-surface text-slate-800 pb-24" dir="rtl">
       <DecorativeBlobs />
-      <Header title="تمرین‌های واقعی زندگی" subtitle="قدم‌های کوچک، تغییرهای بزرگ" back />
+      <main className="relative z-10 max-w-3xl mx-auto px-6 sm:px-10 pt-10 space-y-6">
+        <div className="mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">تمرین‌های واقعی زندگی</h1>
+          <p className="text-sm font-bold text-slate-400 mt-2">قدم‌های کوچک، تغییرهای بزرگ</p>
+        </div>
 
-      <main className="relative z-10 max-w-3xl mx-auto px-4 mt-6 space-y-6">
         {/* خلاصه */}
         <section className="grid grid-cols-2 gap-4">
           <div className="glass-card p-5 flex items-center gap-4">
@@ -165,6 +170,31 @@ export default function CommitmentsPage() {
           <Spinner label="در حال بارگذاری..." />
         ) : tab === 'discover' ? (
           <section className="grid gap-4">
+            {!gate.unlocked && (
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-[1.75rem] p-6 flex items-start gap-4">
+                <div className="w-12 h-12 shrink-0 rounded-2xl bg-amber-100 text-amber-500 flex items-center justify-center">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-black text-amber-900">تمرین‌های واقعی زندگی هنوز قفل است 🔒</p>
+                  <p className="text-amber-800/80 text-sm font-bold mt-1 leading-relaxed">
+                    اول کار درونی، بعد قدم در دنیای واقعی. برای باز شدن این بخش، حداقل {gate.requiredExercises} تمرین شفابخش را کامل کن.
+                  </p>
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="flex-1 h-2.5 bg-amber-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-400 to-orange-400 rounded-full transition-all"
+                        style={{ width: `${gate.requiredExercises ? Math.min(100, (gate.completedExercises / gate.requiredExercises) * 100) : 0}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-black text-amber-700 whitespace-nowrap">{gate.completedExercises} از {gate.requiredExercises}</span>
+                  </div>
+                  <Link href="/exercises" className="inline-flex mt-4 bg-gradient-to-tr from-amber-500 to-orange-500 text-white px-6 py-3 rounded-2xl text-sm font-black shadow-lg shadow-amber-200 active:scale-95 transition-all">
+                    رفتن به تمرین‌های شفابخش
+                  </Link>
+                </div>
+              </div>
+            )}
             {templates.map((t, i) => {
               const Icon = ICONS[t.icon] || Sparkles;
               const meta = CATEGORY_META[t.category] || CATEGORY_META.community;
@@ -194,9 +224,15 @@ export default function CommitmentsPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <Button size="sm" onClick={() => { setPledgeTarget(t); setMoodBefore(0); }}>
-                      <Target className="w-4 h-4" /> این کار را انجام می‌دهم
-                    </Button>
+                    {gate.unlocked ? (
+                      <Button size="sm" onClick={() => { setPledgeTarget(t); setMoodBefore(0); }}>
+                        <Target className="w-4 h-4" /> این کار را انجام می‌دهم
+                      </Button>
+                    ) : (
+                      <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 text-slate-400 text-sm font-black cursor-not-allowed">
+                        <Lock className="w-4 h-4" /> قفل
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );

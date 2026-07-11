@@ -44,7 +44,7 @@ export default function Header({ title, subtitle, back = false, right }) {
           <Link href="/profile">
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="w-10 h-10 bg-linear-to-tr from-brand-100 to-indigo-100 rounded-full border-2 border-white flex items-center justify-center shadow-inner"
+              className="w-10 h-10 bg-linear-to-tr from-brand-100 to-violet-100 rounded-full border-2 border-white flex items-center justify-center shadow-inner"
             >
               <User className="w-5 h-5 text-brand-600" />
             </motion.div>

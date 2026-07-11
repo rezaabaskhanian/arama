@@ -95,7 +95,7 @@ export default function AdminExercisesPage() {
 
   const traumaTypes = [
     { value: 'mild', label: 'ترومای خفیف', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-    { value: 'moderate', label: 'ترومای متوسط', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+    { value: 'moderate', label: 'ترومای متوسط', color: 'bg-violet-50 text-violet-600 border-violet-100' },
     { value: 'severe', label: 'ترومای شدید', color: 'bg-amber-50 text-amber-600 border-amber-100' },
     { value: 'complex', label: 'ترومای پیچیده', color: 'bg-rose-50 text-rose-600 border-rose-100' },
   ];
@@ -108,7 +108,7 @@ export default function AdminExercisesPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
-        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+        <Loader2 className="w-12 h-12 text-violet-500 animate-spin" />
         <p className="text-slate-400 font-bold">در حال بارگذاری تمرین‌ها...</p>
       </div>
     );
@@ -229,7 +229,7 @@ export default function AdminExercisesPage() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleEdit(exercise)}
-                            className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                            className="p-2.5 bg-violet-50 text-violet-600 rounded-xl hover:bg-violet-600 hover:text-white transition-all shadow-sm"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
@@ -280,7 +280,7 @@ export default function AdminExercisesPage() {
               {/* Header */}
               <div className="p-8 border-b border-slate-50 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center">
                     <Plus className="w-6 h-6" />
                   </div>
                   <div>
@@ -308,7 +308,7 @@ export default function AdminExercisesPage() {
                         type="text"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-300"
+                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-violet-500/5 focus:border-violet-500 outline-none transition-all placeholder:text-slate-300"
                         placeholder="مثلاً: تنفس عمیق ۳ دقیقه‌ای"
                         required
                       />
@@ -319,7 +319,7 @@ export default function AdminExercisesPage() {
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-5 py-4 text-sm font-bold focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all min-h-[120px] resize-none placeholder:text-slate-300"
+                        className="w-full bg-slate-50 border border-slate-100 rounded-3xl px-5 py-4 text-sm font-bold focus:ring-4 focus:ring-violet-500/5 focus:border-violet-500 outline-none transition-all min-h-[120px] resize-none placeholder:text-slate-300"
                         placeholder="مراحل انجام تمرین را در اینجا بنویسید..."
                         required
                       />
@@ -331,7 +331,7 @@ export default function AdminExercisesPage() {
                         <select
                           value={formData.trauma_type}
                           onChange={(e) => setFormData({ ...formData, trauma_type: e.target.value })}
-                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer"
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-violet-500/5 focus:border-violet-500 outline-none transition-all appearance-none cursor-pointer"
                         >
                           {traumaTypes.map(t => (
                             <option key={t.value} value={t.value}>{t.label}</option>
@@ -348,7 +348,7 @@ export default function AdminExercisesPage() {
                           type="number"
                           value={formData.duration}
                           onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all pr-12"
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-violet-500/5 focus:border-violet-500 outline-none transition-all pr-12"
                           min="1"
                         />
                         <Clock className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -362,7 +362,7 @@ export default function AdminExercisesPage() {
                           type="number"
                           value={formData.order}
                           onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
-                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-200 outline-none transition-all pr-12"
+                          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm font-black focus:ring-4 focus:ring-violet-500/5 focus:border-violet-200 outline-none transition-all pr-12"
                           min="1"
                         />
                         <ArrowUp01 className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -381,7 +381,7 @@ export default function AdminExercisesPage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-2xl font-black text-sm transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
+                      className="flex-1 bg-violet-600 hover:bg-violet-700 text-white px-6 py-4 rounded-2xl font-black text-sm transition-all shadow-lg shadow-violet-100 flex items-center justify-center gap-2"
                     >
                       {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : editing ? 'ذخیره تغییرات' : 'انتشار تمرین'}
                     </button>

@@ -98,7 +98,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-center items-center p-4 selection:bg-blue-100 overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 flex flex-col justify-center items-center p-4 selection:bg-violet-100 overflow-hidden" dir="rtl">
       <DecorativeBlobs />
 
       <motion.div
@@ -301,8 +301,8 @@ export default function ResetPasswordPage() {
         className="mt-12 flex flex-col items-center gap-4 opacity-30"
       >
         <div className="flex items-center gap-3 grayscale group hover:grayscale-0 transition-all duration-700">
-          <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center p-1.5 group-hover:bg-indigo-100 transition-colors">
-            <ButterflyIcon className="w-full h-full text-slate-400 group-hover:text-indigo-500 transition-colors" />
+          <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center p-1.5 group-hover:bg-violet-100 transition-colors">
+            <ButterflyIcon className="w-full h-full text-slate-400 group-hover:text-violet-500 transition-colors" />
           </div>
           <span className="text-[10px] font-black uppercase tracking-[.25em] text-slate-500">Mindful Recovery</span>
         </div>

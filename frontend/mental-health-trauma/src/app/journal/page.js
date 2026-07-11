@@ -4,25 +4,31 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { getJournalEntries, deleteJournalEntry } from '@/lib/api';
-import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
-import {
-  BookOpen,
-  Plus,
-  Trash2,
-  Edit3,
-  Clock,
-  Heart,
-  AlertCircle,
-  Loader2,
-  Calendar,
-  MessageSquareQuote
-} from 'lucide-react';
+import { BookOpen, Plus, Trash2, Edit3, Loader2, AlertCircle } from 'lucide-react';
+
+const MOOD_EMOJI = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
+
+function relDate(dateString) {
+  const d = new Date(dateString);
+  const now = new Date();
+  const time = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+  const days = Math.floor((now.setHours(0, 0, 0, 0) - new Date(dateString).setHours(0, 0, 0, 0)) / 86400000);
+  if (days <= 0) return `امروز، ${time}`;
+  if (days === 1) return `دیروز، ${time}`;
+  return `${days} روز پیش`;
+}
+
+function titleOf(content) {
+  const first = (content || '').trim().split('\n')[0];
+  return first.length > 40 ? first.slice(0, 40) + '…' : first || 'بدون عنوان';
+}
 
 export default function JournalPage() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     fetchEntries();
@@ -32,7 +38,8 @@ export default function JournalPage() {
     try {
       setLoading(true);
       const data = await getJournalEntries();
-      setEntries(data);
+      setEntries(data || []);
+      if (data && data.length) setSelected(data[0]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -40,13 +47,15 @@ export default function JournalPage() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, e) => {
+    e?.stopPropagation();
     if (!confirm('آیا مطمئنی می‌خواهی این یادداشت را حذف کنی؟')) return;
-
     setDeleteLoading(id);
     try {
       await deleteJournalEntry(id);
-      setEntries(entries.filter(entry => entry.id !== id));
+      const rest = entries.filter((x) => x.id !== id);
+      setEntries(rest);
+      if (selected?.id === id) setSelected(rest[0] || null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -54,201 +63,136 @@ export default function JournalPage() {
     }
   };
 
-  const getMoodEmoji = (mood) => {
-    const moods = {
-      1: { emoji: '😞', label: 'خیلی بد', color: 'bg-red-50 text-red-500', ring: 'ring-red-100' },
-      2: { emoji: '😕', label: 'بد', color: 'bg-orange-50 text-orange-500', ring: 'ring-orange-100' },
-      3: { emoji: '😐', label: 'معمولی', color: 'bg-yellow-50 text-yellow-500', ring: 'ring-yellow-100' },
-      4: { emoji: '🙂', label: 'خوب', color: 'bg-green-50 text-green-500', ring: 'ring-green-100' },
-      5: { emoji: '😄', label: 'عالی', color: 'bg-teal-50 text-teal-500', ring: 'ring-teal-100' }
-    };
-    return moods[mood] || { emoji: '😐', label: 'معمولی', color: 'bg-slate-50 text-slate-500', ring: 'ring-slate-100' };
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fa-IR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden" dir="rtl">
-        <DecorativeBlobs />
-        <div className="relative z-10 text-center space-y-4">
-          <div className="w-16 h-16 bg-white/50 backdrop-blur-xl rounded-[2rem] flex items-center justify-center shadow-xl border border-white/50 mx-auto animate-pulse">
-            <BookOpen className="w-8 h-8 text-teal-500 animate-spin" />
-          </div>
-          <p className="text-slate-500 font-bold">در حال بارگذاری یادداشت‌ها...</p>
-        </div>
+      <div className="min-h-screen bg-surface flex items-center justify-center" dir="rtl">
+        <Loader2 className="w-10 h-10 text-brand-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 pb-20 relative overflow-hidden" dir="rtl">
-      <DecorativeBlobs />
-
-      <motion.main
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 max-w-2xl mx-auto px-4 pt-12 space-y-8"
-      >
-        {/* هدر */}
-        <div className="text-center space-y-3">
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            className="inline-flex p-4 bg-white/70 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/50 text-teal-500 mb-2"
-          >
-            <BookOpen className="w-10 h-10" />
-          </motion.div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">دفترچه احساسات</h1>
-          <p className="text-sm font-bold text-slate-400">احساساتت را بنویس، رهایش کن ✨</p>
-        </div>
-
-        {/* دکمه نوشتن یادداشت جدید - بروزرسانی شده به استایل داشبورد */}
-        <Link href="/journal/new">
-          <motion.button
-            whileHover={{ y: -5, shadow: "0 25px 50px -12px rgba(20,184,166,0.2)" }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full bg-gradient-to-tr from-teal-500 to-cyan-600 text-white p-6 rounded-[2.5rem] font-black shadow-xl shadow-teal-100 flex items-center justify-center gap-3 transition-all duration-300"
-          >
-            <div className="bg-white/20 p-2 rounded-xl">
-              <Plus className="w-6 h-6" />
+    <div className="min-h-screen bg-surface text-slate-800 pb-24 selection:bg-brand-100" dir="rtl">
+      <main className="max-w-6xl mx-auto px-6 sm:px-10 pt-10">
+        <div className="grid lg:grid-cols-5 gap-6">
+          {/* ستون لیست */}
+          <section className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-6 flex flex-col">
+            <div className="flex items-center justify-between gap-3 pb-5 border-b border-slate-100">
+              <h1 className="text-lg font-black text-slate-900 flex items-center gap-3">
+                <span className="w-11 h-11 rounded-2xl bg-brand-900 text-white flex items-center justify-center">
+                  <BookOpen className="w-5 h-5" />
+                </span>
+                یادداشت‌های عاطفی
+              </h1>
+              <Link href="/journal/new" className="btn-accent inline-flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-black shadow-lg shadow-accent-500/20">
+                <Plus className="w-4 h-4" />
+                یادداشت جدید
+              </Link>
             </div>
-            <span className="text-lg">نوشتن یادداشت جدید</span>
-          </motion.button>
-        </Link>
 
-        {/* خطا */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-red-50/50 backdrop-blur-md border border-red-100 rounded-[2rem] p-6 text-center space-y-3"
-          >
-            <div className="flex justify-center">
-              <AlertCircle className="w-8 h-8 text-red-500" />
-            </div>
-            <p className="text-red-700 font-bold text-sm">{error}</p>
-            <button
-              onClick={fetchEntries}
-              className="text-red-500 text-xs font-black uppercase tracking-widest underline underline-offset-4"
-            >
-              تلاش مجدد
-            </button>
-          </motion.div>
-        )}
+            {error && (
+              <div className="mt-5 bg-red-50 border border-red-100 rounded-2xl p-4 text-red-600 text-sm font-bold flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" /> {error}
+              </div>
+            )}
 
-        {/* لیست یادداشت‌ها */}
-        {entries.length === 0 && !error ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-white/60 backdrop-blur-xl rounded-[3rem] p-16 text-center border border-white/50 shadow-xl"
-          >
-            <div className="w-20 h-20 bg-slate-50 text-slate-300 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6">
-              <MessageSquareQuote className="w-10 h-10" />
-            </div>
-            <p className="text-slate-500 font-bold mb-2">هنوز یادداشتی ننوشتی.</p>
-            <p className="text-slate-400 text-xs font-medium">اولین کلماتت را برای آرامش ثبت کن.</p>
-          </motion.div>
-        ) : (
-          <div className="space-y-6">
-            {entries.map((entry, index) => {
-              const moodInfo = getMoodEmoji(entry.mood);
-              return (
-                <motion.div
-                  key={entry.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/80 shadow-xl hover:shadow-2xl hover:shadow-teal-900/5 transition-all duration-500 overflow-hidden"
-                >
-                  {/* هدر یادداشت */}
-                  <div className="p-6 pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl text-[10px] font-black border border-white/50 shadow-sm ${moodInfo.color}`}>
-                          <span>{moodInfo.emoji}</span>
-                          <span>{moodInfo.label}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[10px] uppercase tracking-widest bg-slate-50/50 px-3 py-1.5 rounded-2xl">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{formatDate(entry.created_at)}</span>
-                        </div>
+            <div className="mt-5 space-y-4 flex-1">
+              {entries.length === 0 ? (
+                <p className="text-center text-slate-400 text-sm font-bold py-12">هنوز یادداشتی ننوشتی.</p>
+              ) : (
+                entries.map((entry) => {
+                  const active = selected?.id === entry.id;
+                  return (
+                    <button
+                      key={entry.id}
+                      onClick={() => setSelected(entry)}
+                      className={`w-full text-right rounded-[1.5rem] p-5 border transition-all ${
+                        active ? 'bg-white border-brand-300 ring-2 ring-brand-100 shadow-lg' : 'bg-slate-50/60 border-transparent hover:bg-white hover:border-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-2.5 font-black text-slate-800">
+                          <span className="text-xl">{MOOD_EMOJI[entry.mood] || '😐'}</span>
+                          {titleOf(entry.content)}
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-400 shrink-0">{relDate(entry.created_at)}</span>
                       </div>
-
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-100/70">
                         <Link
                           href={`/journal/edit/${entry.id}`}
-                          className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-blue-500 hover:border-blue-100 hover:shadow-lg hover:shadow-blue-900/5 transition-all"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-brand-600 transition-colors"
                         >
-                          <Edit3 className="w-4 h-4" />
+                          <Edit3 className="w-3.5 h-3.5" /> ویرایش
                         </Link>
                         <button
-                          onClick={() => handleDelete(entry.id)}
+                          onClick={(e) => handleDelete(entry.id, e)}
                           disabled={deleteLoading === entry.id}
-                          className="w-10 h-10 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-100 hover:shadow-lg hover:shadow-red-900/5 transition-all disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
                         >
-                          {deleteLoading === entry.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
+                          {deleteLoading === entry.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                          حذف
                         </button>
                       </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </section>
+
+          {/* ستون جزئیات */}
+          <section className="lg:col-span-3 bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-8 min-h-[60vh] flex flex-col">
+            <AnimatePresence mode="wait">
+              {selected ? (
+                <motion.div
+                  key={selected.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col h-full"
+                >
+                  <div className="flex items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{MOOD_EMOJI[selected.mood] || '😐'}</span>
+                      <div>
+                        <h2 className="text-xl font-black text-slate-900">{titleOf(selected.content)}</h2>
+                        <p className="text-xs font-bold text-slate-400 mt-1">{relDate(selected.created_at)}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link href={`/journal/edit/${selected.id}`} className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-brand-600 flex items-center justify-center transition-colors">
+                        <Edit3 className="w-4 h-4" />
+                      </Link>
+                      <button onClick={(e) => handleDelete(selected.id, e)} className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="px-8 pb-8 pt-4">
-                    <p className="text-slate-700 leading-relaxed font-medium text-lg whitespace-pre-wrap break-words">
-                      {entry.content}
-                    </p>
-                  </div>
-
-                  <div className="px-8 py-4 bg-slate-50/30 border-t border-slate-100/50 flex justify-between items-center">
-                    <div className="flex gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      <span className="flex items-center gap-1.5">
-                        <PenTool className="w-3.5 h-3.5" />
-                        {entry.content.length} کاراکتر
-                      </span>
-                      {entry.updated_at !== entry.created_at && (
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" />
-                          ویرایش شده
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  <p className="mt-6 text-slate-700 leading-loose font-medium whitespace-pre-wrap break-words flex-1">
+                    {selected.content}
+                  </p>
                 </motion.div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* نقل قول انگیزشی */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="bg-gradient-to-br from-teal-50/50 to-emerald-50/50 backdrop-blur-md border border-teal-100/50 rounded-[2.5rem] p-8 text-center space-y-4 shadow-inner"
-        >
-          <div className="w-12 h-12 bg-teal-100 text-teal-500 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-            <Heart className="w-6 h-6 fill-current" />
-          </div>
-          <p className="text-teal-900/80 font-bold italic leading-relaxed max-w-sm mx-auto">
-            "🌸 نوشتن، راهی است برای آشتی با خودت. هر کلمه ای که روی کاغذ می‌آوری، سبک‌تر می‌شوی."
-          </p>
-          <div className="h-0.5 w-12 bg-teal-200/50 mx-auto rounded-full" />
-        </motion.div>
-      </motion.main>
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex-1 flex flex-col items-center justify-center text-center gap-4"
+                >
+                  <span className="w-20 h-20 rounded-[2rem] bg-slate-50 text-slate-300 flex items-center justify-center">
+                    <BookOpen className="w-10 h-10" />
+                  </span>
+                  <h2 className="text-2xl font-black text-slate-900">مکانی امن برای عواطف شما</h2>
+                  <p className="text-sm font-bold text-slate-400 leading-relaxed max-w-sm">
+                    یک یادداشت را از لیست سمت راست انتخاب کنید تا جزئیات آن بارگذاری گردد، یا دکمه‌ی «یادداشت جدید» را برای ثبت بفشارید.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
+        </div>
+      </main>
     </div>
   );
 }

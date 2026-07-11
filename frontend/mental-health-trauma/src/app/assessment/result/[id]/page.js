@@ -123,13 +123,13 @@ export default function AssessmentResultPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-[#EEEBF6] flex flex-col items-center justify-center p-4" dir="rtl">
         <DecorativeBlobs />
         <div className="relative z-10 flex flex-col items-center">
           <motion.div 
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full mb-6"
+            className="w-16 h-16 border-4 border-violet-200 border-t-violet-600 rounded-full mb-6"
           />
           <p className="text-slate-500 font-medium animate-pulse">در حال تحلیل پاسخ‌های شما...</p>
         </div>
@@ -139,7 +139,7 @@ export default function AssessmentResultPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-[#EEEBF6] flex items-center justify-center p-4" dir="rtl">
         <DecorativeBlobs />
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
@@ -170,7 +170,7 @@ export default function AssessmentResultPage() {
 
   return (
   
-  <div className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 selection:bg-blue-100" dir="rtl">
+  <div className="min-h-screen bg-[#EEEBF6] text-slate-800 py-12 px-4 selection:bg-violet-100" dir="rtl">
     
     
       {/*
@@ -191,7 +191,7 @@ export default function AssessmentResultPage() {
           <motion.div variants={itemVariants} className="text-center space-y-2 mb-8">
             <motion.div 
               whileHover={{ scale: 1.05, rotate: 5 }}
-              className="w-20 h-20 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-200"
+              className="w-20 h-20 bg-gradient-to-tr from-violet-500 to-purple-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-violet-200"
             >
               <Sparkles className="w-10 h-10 text-white" />
             </motion.div>
@@ -201,8 +201,8 @@ export default function AssessmentResultPage() {
 
           {/* Score Card */}
           <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-md rounded-[2.5rem] border border-white p-8 shadow-xl shadow-slate-200/50 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-60" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -ml-16 -mb-16 opacity-60" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-60" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-violet-50 rounded-full blur-3xl -ml-16 -mb-16 opacity-60" />
             
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">امتیاز کلی</p>
             <div className="flex items-baseline justify-center gap-2">
@@ -239,7 +239,7 @@ export default function AssessmentResultPage() {
           {/* Description */}
           <motion.div variants={itemVariants} className="bg-white/60 backdrop-blur-md rounded-[2.5rem] border border-white p-8 shadow-xl shadow-slate-200/50">
             <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <span className="w-1.5 h-5 bg-indigo-500 rounded-full" />
+              <span className="w-1.5 h-5 bg-violet-500 rounded-full" />
               تفسیر نتیجه
             </h3>
             <p className="text-slate-600 leading-relaxed font-medium">

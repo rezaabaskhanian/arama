@@ -14,7 +14,8 @@ import {
   X,
   ShieldCheck,
   Bell,
-  Target
+  Target,
+  HeartHandshake
 } from 'lucide-react';
 import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
 
@@ -51,9 +52,9 @@ export default function AdminLayout({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+      <div className="min-h-screen flex items-center justify-center bg-[#EEEBF6]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-slate-500 font-bold">در حال بارگذاری پنل...</p>
         </div>
       </div>
@@ -65,6 +66,7 @@ export default function AdminLayout({ children }) {
     { title: 'کاربران', href: '/admin/users', icon: <Users className="w-5 h-5" /> },
     { title: 'تمرین‌ها', href: '/admin/exercises', icon: <Dumbbell className="w-5 h-5" /> },
     { title: 'تمرین‌های واقعی', href: '/admin/commitments', icon: <Target className="w-5 h-5" /> },
+    { title: 'نظارت روانشناس', href: '/admin/supervision', icon: <HeartHandshake className="w-5 h-5" /> },
     { title: 'بازگشت به سایت', href: '/', icon: <Home className="w-5 h-5" /> },
   ];
 
@@ -76,7 +78,7 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 flex" dir="rtl">
       <DecorativeBlobs />
 
       {/* Sidebar - Desktop */}
@@ -86,7 +88,7 @@ export default function AdminLayout({ children }) {
         className="hidden lg:flex flex-col bg-white/70 backdrop-blur-2xl border-l border-white shadow-2xl z-30 sticky top-0 h-screen overflow-hidden transition-all duration-300"
       >
         <div className="p-6 flex items-center gap-4">
-          <div className="bg-gradient-to-tr from-indigo-500 to-pink-500 p-2.5 rounded-2xl shadow-lg shadow-indigo-100 shrink-0">
+          <div className="bg-gradient-to-tr from-violet-500 to-pink-500 p-2.5 rounded-2xl shadow-lg shadow-violet-100 shrink-0">
             <ButterflyIcon className="w-7 h-7 text-white" />
           </div>
           <AnimatePresence>
@@ -113,11 +115,11 @@ export default function AdminLayout({ children }) {
                   whileHover={{ x: -4 }}
                   whileTap={{ scale: 0.98 }}
                   className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${isActive
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                      : 'text-slate-500 hover:bg-white hover:text-indigo-600'
+                      ? 'bg-violet-600 text-white shadow-lg shadow-violet-200'
+                      : 'text-slate-500 hover:bg-white hover:text-violet-600'
                     }`}
                 >
-                  <div className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'} transition-colors`}>
+                  <div className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-500'} transition-colors`}>
                     {item.icon}
                   </div>
                   <AnimatePresence>
@@ -158,7 +160,7 @@ export default function AdminLayout({ children }) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="hidden lg:flex w-10 h-10 items-center justify-center bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400 hover:text-indigo-500 transition-all"
+              className="hidden lg:flex w-10 h-10 items-center justify-center bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400 hover:text-violet-500 transition-all"
             >
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -174,7 +176,7 @@ export default function AdminLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="relative w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400 hover:text-indigo-500 transition-all">
+            <button className="relative w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400 hover:text-violet-500 transition-all">
               <Bell className="w-5 h-5" />
               <span className="absolute top-2 left-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
             </button>
@@ -184,8 +186,8 @@ export default function AdminLayout({ children }) {
                 <p className="text-xs font-black text-slate-900 leading-none">مدیر سیستم</p>
                 <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Admin Access</p>
               </div>
-              <div className="w-10 h-10 bg-gradient-to-tr from-indigo-100 to-blue-100 rounded-xl border border-indigo-200 flex items-center justify-center shadow-inner">
-                <ShieldCheck className="w-6 h-6 text-indigo-600" />
+              <div className="w-10 h-10 bg-gradient-to-tr from-violet-100 to-violet-100 rounded-xl border border-violet-200 flex items-center justify-center shadow-inner">
+                <ShieldCheck className="w-6 h-6 text-violet-600" />
               </div>
             </div>
           </div>
@@ -216,7 +218,7 @@ export default function AdminLayout({ children }) {
             >
               <div className="p-6 flex items-center justify-between border-b border-slate-50">
                 <div className="flex items-center gap-3">
-                  <div className="bg-indigo-600 p-2 rounded-xl">
+                  <div className="bg-violet-600 p-2 rounded-xl">
                     <ButterflyIcon className="w-5 h-5 text-white" />
                   </div>
                   <span className="font-black text-slate-900">پنل مدیریت</span>
@@ -230,7 +232,7 @@ export default function AdminLayout({ children }) {
                   const isActive = pathname === item.href;
                   return (
                     <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>
-                      <div className={`flex items-center gap-4 px-4 py-4 rounded-2xl font-black text-sm ${isActive ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500'
+                      <div className={`flex items-center gap-4 px-4 py-4 rounded-2xl font-black text-sm ${isActive ? 'bg-violet-50 text-violet-600' : 'text-slate-500'
                         }`}>
                         {item.icon}
                         {item.title}

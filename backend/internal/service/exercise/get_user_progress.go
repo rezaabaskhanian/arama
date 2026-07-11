@@ -29,10 +29,38 @@ func (s Service) GetUserProgress(ctx context.Context, req dto.GetUserProgressReq
 
 	}
 
+	// وضعیت روزانه: آیا امروز تمرینی انجام شده و آیا تمرینِ بازی برای انجام هست.
+	ordered, err := s.repo.FindExercisesByTraumaType(ctx, req.TraumaType)
+	if err != nil {
+		return dto.GetUserProgressResponse{}, richerror.New(op).WithErr(err)
+	}
+
+	completedSet, err := s.repo.FindCompletedExerciseIDsByUser(ctx, req.UserID)
+	if err != nil {
+		return dto.GetUserProgressResponse{}, richerror.New(op).WithErr(err)
+	}
+
+	lastDate, err := s.repo.GetLastUserExerciseDate(ctx, req.UserID)
+	if err != nil {
+		return dto.GetUserProgressResponse{}, richerror.New(op).WithErr(err)
+	}
+
+	completedToday := lastDate != nil && isTodayTehran(*lastDate)
+	hasNext := nextUnlockIndex(ordered, completedSet) >= 0
+	canDoToday := hasNext && !completedToday
+
+	nextAvailableDate := ""
+	if completedToday && hasNext {
+		nextAvailableDate = nextTehranDayStart().Format("2006-01-02")
+	}
+
 	return dto.GetUserProgressResponse{
 		TotalExercises:     totalExercises,
 		CompletedExercises: completedExercises,
 		ProgressPercent:    ProgressPercent,
+		CompletedToday:     completedToday,
+		CanDoToday:         canDoToday,
+		NextAvailableDate:  nextAvailableDate,
 	}, nil
 
 }

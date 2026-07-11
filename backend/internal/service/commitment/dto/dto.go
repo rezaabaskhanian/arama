@@ -14,6 +14,11 @@ type TemplateInfo struct {
 
 type TemplateListResponse struct {
 	Templates []TemplateInfo `json:"templates"`
+	// Unlocked نشان می‌دهد کاربر شرط باز شدن این بخش را دارد یا نه.
+	Unlocked bool `json:"unlocked"`
+	// CompletedExercises و RequiredExercises برای نمایش پیشرفتِ گِیت در UI.
+	CompletedExercises int `json:"completed_exercises"`
+	RequiredExercises  int `json:"required_exercises"`
 }
 
 // ---- User commitment ----

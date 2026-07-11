@@ -4,8 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { startAssessment, getAssessmentQuestions, submitAssessment } from '@/lib/api';
-import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
-import { Heart, ChevronLeft, AlertCircle, Loader2 } from 'lucide-react';
+import { Heart, ChevronLeft, AlertCircle, Loader2, ClipboardList } from 'lucide-react';
+
+const OPTIONS = [
+  { score: 0, label: 'اصلاً', ring: 'hover:border-slate-200', badge: 'bg-slate-100 text-slate-500' },
+  { score: 1, label: 'کمی', ring: 'hover:border-calm-200', badge: 'bg-calm-50 text-calm-600' },
+  { score: 2, label: 'متوسط', ring: 'hover:border-warm-200', badge: 'bg-warm-50 text-warm-500' },
+  { score: 3, label: 'خیلی', ring: 'hover:border-orange-200', badge: 'bg-orange-50 text-orange-500' },
+  { score: 4, label: 'فوق‌العاده زیاد', ring: 'hover:border-accent-200', badge: 'bg-accent-50 text-accent-600' },
+];
 
 export default function AssessmentPage() {
   const router = useRouter();
@@ -29,7 +36,7 @@ export default function AssessmentPage() {
       const questionsRes = await getAssessmentQuestions();
       setQuestions(questionsRes.questions);
     } catch (err) {
-      setError('خطا در شروع تست. لطفاً اتصال خود را بررسی کنید.');
+      setError('خطا در شروع ارزیابی. لطفاً اتصال خود را بررسی کنید.');
     } finally {
       setLoading(false);
     }
@@ -42,7 +49,6 @@ export default function AssessmentPage() {
   const handleAnswer = async (score) => {
     const newAnswers = { ...answers, [currentQuestion.id]: score };
     setAnswers(newAnswers);
-
     if (isLast) {
       await SubmitAssessment(newAnswers);
     } else {
@@ -54,11 +60,7 @@ export default function AssessmentPage() {
     setSubmitting(true);
     setError('');
     try {
-      
       const response = await submitAssessment(assessmentId, Answers);
-
-      console.log(response,"response.trauma_type")
-
       localStorage.setItem('lastAssessmentResult', JSON.stringify(response));
       localStorage.setItem('traumaType', response.trauma_type);
       router.push(`/assessment/result/${response.assessment_id}`);
@@ -69,20 +71,15 @@ export default function AssessmentPage() {
   };
 
   const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
+    if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden" dir="rtl">
-        <DecorativeBlobs />
-        <div className="relative z-10 text-center space-y-4">
-          <div className="w-16 h-16 bg-white/50 backdrop-blur-xl rounded-[2rem] flex items-center justify-center shadow-xl border border-white/50 mx-auto">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-          </div>
-          <p className="text-slate-500 font-bold animate-pulse">در حال آماده‌سازی تست...</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center" dir="rtl">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-10 h-10 text-brand-500 animate-spin mx-auto" />
+          <p className="text-slate-500 font-bold">در حال آماده‌سازی ارزیابی...</p>
         </div>
       </div>
     );
@@ -90,161 +87,141 @@ export default function AssessmentPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 relative overflow-hidden" dir="rtl">
-        <DecorativeBlobs />
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="relative z-10 bg-white/70 backdrop-blur-2xl border border-white/50 rounded-[2.5rem] p-8 text-center max-w-md shadow-2xl shadow-red-900/5"
-        >
-          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen bg-surface flex items-center justify-center px-6" dir="rtl">
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-100 p-10 text-center max-w-md space-y-5">
+          <span className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto">
             <AlertCircle className="w-8 h-8" />
-          </div>
-          <p className="text-slate-900 font-extrabold text-lg mb-6 leading-relaxed">{error}</p>
+          </span>
+          <p className="text-slate-900 font-extrabold text-lg leading-relaxed">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="w-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all"
+            className="w-full bg-brand-600 text-white px-8 py-4 rounded-2xl font-black shadow-lg shadow-brand-200 hover:bg-brand-700 transition-all"
           >
             تلاش مجدد
           </button>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 relative overflow-hidden" dir="rtl">
-      <DecorativeBlobs />
+    <div className="min-h-screen bg-surface text-slate-800 pb-24 selection:bg-brand-100" dir="rtl">
+      <main className="max-w-2xl mx-auto px-6 sm:px-10 pt-10 space-y-6">
+        {/* سرصفحه + نوار پیشرفت */}
+        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-6">
+          <div className="flex justify-between items-end mb-4">
+            <div className="flex items-center gap-3">
+              <span className="w-11 h-11 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                <ClipboardList className="w-5 h-5" />
+              </span>
+              <div>
+                <h1 className="text-lg font-black text-slate-900 leading-tight">ارزیابی وضعیت روحی</h1>
+                <p className="text-xs font-bold text-slate-400 mt-0.5">سوال {currentIndex + 1} از {questions.length}</p>
+              </div>
+            </div>
+            <span className="bg-brand-50 text-brand-600 px-3 py-1.5 rounded-xl text-xs font-black">{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ ease: 'circOut' }}
+              className="h-full bg-gradient-to-r from-brand-500 to-brand-400 rounded-full"
+            />
+          </div>
+        </div>
 
-      <div className="max-w-xl mx-auto relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
+            className="space-y-6"
           >
-            {/* هدر و نوار پیشرفت */}
-            <div className="bg-white/60 backdrop-blur-xl border border-white/80 p-6 rounded-[2.5rem] shadow-xl shadow-blue-900/5">
-              <div className="flex justify-between items-end mb-4 px-2">
-                <div>
-                  <h1 className="text-xl font-black text-slate-900 leading-tight">پایش وضعیت روحی</h1>
-                  <p className="text-xs font-bold text-slate-400 mt-1">سوال {currentIndex + 1} از {questions.length}</p>
-                </div>
-                <div className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-xl text-xs font-black">
-                  {Math.round(progress)}%
-                </div>
-              </div>
-              <div className="relative h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  className="h-full bg-gradient-to-r from-blue-500 to-teal-400 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]"
-                />
-              </div>
-            </div>
-
             {/* کارت سوال */}
-            <div className="bg-white/80 backdrop-blur-2xl border border-white border-b-slate-100/50 rounded-[3rem] shadow-2xl shadow-slate-200/50 p-8">
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-8">
               <div className="flex items-center gap-4 mb-8">
-                <div className="p-3 bg-indigo-50 text-indigo-500 rounded-2xl">
+                <span className="p-3 bg-brand-50 text-brand-500 rounded-2xl shrink-0">
                   <Heart className="w-6 h-6 fill-current" />
-                </div>
-                <h2 className="text-2xl font-black text-slate-900 leading-tight">
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">
                   {currentQuestion?.text}
                 </h2>
               </div>
 
               <div className="grid gap-3">
-                {[
-                  { score: 0, label: 'اصلاً', color: 'hover:bg-slate-50 border-slate-100', text: 'text-slate-600', bg: 'bg-slate-50/50' },
-                  { score: 1, label: 'کمی', color: 'hover:bg-emerald-50 border-emerald-100', text: 'text-emerald-700', bg: 'bg-emerald-50/50' },
-                  { score: 2, label: 'متوسط', color: 'hover:bg-amber-50 border-amber-100', text: 'text-amber-700', bg: 'bg-amber-50/50' },
-                  { score: 3, label: 'خیلی', color: 'hover:bg-orange-50 border-orange-100', text: 'text-orange-700', bg: 'bg-orange-50/50' },
-                  { score: 4, label: 'فوق‌العاده زیاد', color: 'hover:bg-red-50 border-red-100', text: 'text-red-700', bg: 'bg-red-50/50' },
-                ].map((option) => (
+                {OPTIONS.map((option) => (
                   <motion.button
                     key={option.score}
-                    whileHover={{ scale: 1.02, x: -5 }}
+                    whileHover={{ x: -4 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleAnswer(option.score)}
                     disabled={submitting}
-                    className={`w-full p-5 text-right rounded-[2rem] border-2 transition-all duration-300 group flex justify-between items-center ${option.color} ${option.bg}`}
+                    className={`w-full p-5 text-right rounded-[1.5rem] border-2 border-slate-100 bg-slate-50/40 transition-all flex justify-between items-center group ${option.ring} hover:bg-white hover:shadow-lg disabled:opacity-60`}
                   >
-                    <span className={`font-black text-lg ${option.text}`}>{option.label}</span>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm bg-white shadow-sm border border-inherit group-hover:shadow-md transition-all`}>
+                    <span className="font-black text-lg text-slate-700">{option.label}</span>
+                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${option.badge}`}>
                       {option.score}
-                    </div>
+                    </span>
                   </motion.button>
                 ))}
               </div>
             </div>
 
             {/* دکمه قبلی */}
-            <div className="flex justify-between items-center px-4">
+            <div className="flex justify-between items-center">
               <motion.button
-                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handlePrev}
                 disabled={currentIndex === 0 || submitting}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-500 font-bold hover:bg-slate-50 hover:text-slate-900 transition-all disabled:opacity-30"
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-slate-100 text-slate-500 font-bold hover:bg-slate-50 hover:text-slate-900 transition-all disabled:opacity-30"
               >
                 <ChevronLeft className="w-5 h-5 rotate-180" />
                 <span>قبلی</span>
               </motion.button>
-
-              {!isLast && (
-                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  یکی از گزینه‌ها را انتخاب کنید
-                </div>
-              )}
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                یکی از گزینه‌ها را انتخاب کنید
+              </span>
             </div>
           </motion.div>
         </AnimatePresence>
 
         {/* پیام ایمنی */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="mt-12 p-6 bg-gradient-to-br from-amber-50/50 to-orange-50/50 backdrop-blur-md border border-amber-100/50 rounded-[2rem] text-amber-900/80 text-center space-y-2 shadow-inner"
-        >
-          <div className="flex justify-center mb-2">
-            <AlertCircle className="w-6 h-6 text-amber-500" />
-          </div>
-          <p className="text-sm font-bold leading-relaxed">
-            اگر در حین پاسخ‌گویی احساس ناراحتی کردی، می‌توانی تست را متوقف کنی.
+        <div className="bg-warm-50 border border-warm-100 rounded-[1.75rem] p-6 text-center space-y-2">
+          <AlertCircle className="w-6 h-6 text-warm-500 mx-auto" />
+          <p className="text-sm font-bold text-warm-900/80 leading-relaxed">
+            اگر در حین پاسخ‌گویی احساس ناراحتی کردی، می‌توانی ارزیابی را متوقف کنی.
           </p>
-          <p className="text-xs font-medium">
-            شماره خط کمک: <a href="tel:123" className="font-black underline decoration-amber-500/30 underline-offset-4">۱۲۳</a>
+          <p className="text-xs font-medium text-warm-900/60">
+            شماره خط کمک: <a href="tel:123" className="font-black underline decoration-warm-500/30 underline-offset-4">۱۲۳</a>
           </p>
-        </motion.div>
+        </div>
+      </main>
 
-        {/* لودینگ هنگام ارسال */}
-        <AnimatePresence>
-          {submitting && (
+      {/* لودینگ هنگام ارسال */}
+      <AnimatePresence>
+        {submitting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[60] p-6"
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-6"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-white rounded-[2.5rem] p-10 text-center shadow-2xl max-w-sm w-full"
             >
-              <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                className="bg-white rounded-[3rem] p-10 text-center shadow-2xl max-w-sm w-full"
-              >
-                <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
-                  <Loader2 className="w-10 h-10 animate-spin" />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">در حال تحلیل هوشمند</h3>
-                <p className="text-slate-500 font-bold text-sm">صبور باشید، در حال بررسی پاسخ‌های شما هستیم...</p>
-              </motion.div>
+              <div className="w-20 h-20 bg-brand-50 text-brand-500 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <Loader2 className="w-10 h-10 animate-spin" />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-2">در حال تحلیل هوشمند</h3>
+              <p className="text-slate-500 font-bold text-sm">صبور باش، در حال بررسی پاسخ‌های تو هستیم...</p>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

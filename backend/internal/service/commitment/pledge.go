@@ -7,6 +7,7 @@ import (
 	"aramina/internal/pkg/richerror"
 	"aramina/internal/service/commitment/dto"
 	"context"
+	"fmt"
 )
 
 // Pledge ثبت تعهد کاربر روی یک الگو یا یک تعهد سفارشی
@@ -16,6 +17,17 @@ func (s Service) Pledge(ctx context.Context, req dto.PledgeRequest, userID strin
 	user, err := s.auth.GetUserByIDService(userID)
 	if err != nil {
 		return dto.CommitmentResponse{}, richerror.New(op).WithErr(err).WithMessage("کاربر یافت نشد")
+	}
+
+	// گِیت فعال‌سازی: تا کاربر پایه‌ی کار درونی را نساخته، تمرین‌های واقعی زندگی قفل است.
+	completedExercises, err := s.repo.CountUserCompletedExercises(ctx, userID)
+	if err != nil {
+		return dto.CommitmentResponse{}, richerror.New(op).WithErr(err)
+	}
+	if completedExercises < RequiredExercisesToUnlock {
+		return dto.CommitmentResponse{}, richerror.New(op).WithMessage(
+			fmt.Sprintf("برای باز شدن تمرین‌های واقعی زندگی، ابتدا باید حداقل %d تمرین شفابخش را کامل کنی", RequiredExercisesToUnlock),
+		)
 	}
 
 	title := req.Title

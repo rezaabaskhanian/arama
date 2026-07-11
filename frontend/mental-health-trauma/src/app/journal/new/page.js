@@ -43,7 +43,7 @@ export default function NewJournalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 selection:bg-teal-100" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 py-12 px-4 selection:bg-teal-100" dir="rtl">
       <DecorativeBlobs />
       
       <div className="max-w-3xl mx-auto relative z-10 space-y-8">

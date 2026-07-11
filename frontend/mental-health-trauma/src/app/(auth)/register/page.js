@@ -116,7 +116,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-center items-center p-4 selection:bg-blue-100 overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 flex flex-col justify-center items-center p-4 selection:bg-violet-100 overflow-hidden" dir="rtl">
       <DecorativeBlobs />
 
       <motion.div
@@ -137,7 +137,7 @@ export default function RegisterPage() {
               delay: 0.2
             }}
             whileHover={{ rotate: 360, scale: 1.1 }}
-            className="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-pink-500 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-2xl shadow-indigo-200"
+            className="w-16 h-16 bg-gradient-to-tr from-violet-500 to-pink-500 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-2xl shadow-violet-200"
           >
             <ButterflyIcon className="w-8 h-8 text-white" />
           </motion.div>
@@ -167,14 +167,14 @@ export default function RegisterPage() {
           className="bg-white/70 backdrop-blur-2xl p-7 rounded-[2.5rem] border border-white/50 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden"
         >
           {/* Subtle background glow */}
-          <div className="absolute top-0 left-0 w-32 h-32 bg-blue-100/30 blur-3xl -ml-16 -mt-16 rounded-full" />
+          <div className="absolute top-0 left-0 w-32 h-32 bg-violet-100/30 blur-3xl -ml-16 -mt-16 rounded-full" />
           <div className="absolute bottom-0 right-0 w-32 h-32 bg-teal-100/30 blur-3xl -mr-16 -mb-16 rounded-full" />
 
           <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
             {/* Nickname Input */}
             <div className="space-y-1.5">
               <label className="block text-xs font-black text-slate-700 mr-1 flex items-center gap-2">
-                <User className="w-3.5 h-3.5 text-blue-500" />
+                <User className="w-3.5 h-3.5 text-violet-500" />
                 نام و نام خانوادگی
               </label>
               <input
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                 name="nickname"
                 value={formData.nickname}
                 onChange={handleChange}
-                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                 placeholder="مثلاً: علی محمدی"
                 disabled={loading}
               />
@@ -191,7 +191,7 @@ export default function RegisterPage() {
             {/* Phone Input */}
             <div className="space-y-1.5">
               <label className="block text-xs font-black text-slate-700 mr-1 flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-blue-500" />
+                <Phone className="w-3.5 h-3.5 text-violet-500" />
                 شماره موبایل
               </label>
               <input
@@ -199,7 +199,7 @@ export default function RegisterPage() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                 placeholder="۰۹۱۲۱۲۳۴۵۶۷"
                 disabled={loading}
               />
@@ -208,7 +208,7 @@ export default function RegisterPage() {
             {/* Password Input */}
             <div className="space-y-1.5">
               <label className="block text-xs font-black text-slate-700 mr-1 flex items-center gap-2">
-                <Lock className="w-3.5 h-3.5 text-blue-500" />
+                <Lock className="w-3.5 h-3.5 text-violet-500" />
                 رمز عبور
               </label>
               <input
@@ -216,7 +216,7 @@ export default function RegisterPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -225,7 +225,7 @@ export default function RegisterPage() {
             {/* Confirm Password Input */}
             <div className="space-y-1.5">
               <label className="block text-xs font-black text-slate-700 mr-1 flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-violet-500" />
                 تکرار رمز عبور
               </label>
               <input
@@ -233,7 +233,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -290,7 +290,7 @@ export default function RegisterPage() {
               قبلاً ثبت‌نام کرده‌اید؟{' '}
               <Link
                 href="/login"
-                className="text-blue-600 font-black hover:underline"
+                className="text-violet-600 font-black hover:underline"
               >
                 وارد شوید
               </Link>
@@ -323,8 +323,8 @@ export default function RegisterPage() {
         className="mt-4 pb-8 flex flex-col items-center gap-4 opacity-30"
       >
         <div className="flex items-center gap-3 grayscale group hover:grayscale-0 transition-all duration-700">
-          <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center p-1.5 group-hover:bg-indigo-100 transition-colors">
-            <ButterflyIcon className="w-full h-full text-slate-400 group-hover:text-indigo-500 transition-colors" />
+          <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center p-1.5 group-hover:bg-violet-100 transition-colors">
+            <ButterflyIcon className="w-full h-full text-slate-400 group-hover:text-violet-500 transition-colors" />
           </div>
           <span className="text-[10px] font-black uppercase tracking-[.25em] text-slate-500">Mindful Recovery</span>
         </div>

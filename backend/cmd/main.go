@@ -14,6 +14,7 @@ import (
 	postgresexercise "aramina/internal/repository/postgres/exercise"
 	postgresjournal "aramina/internal/repository/postgres/journal"
 	postgressession "aramina/internal/repository/postgres/session"
+	postgressupervision "aramina/internal/repository/postgres/supervision"
 	postgresuser "aramina/internal/repository/postgres/user"
 	adminservice "aramina/internal/service/admin"
 	assessmentservice "aramina/internal/service/assessment"
@@ -24,8 +25,10 @@ import (
 	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
 	sessionservice "aramina/internal/service/session"
+	supervisionservice "aramina/internal/service/supervision"
 	userservice "aramina/internal/service/user"
 
+	"context"
 	"time"
 )
 
@@ -54,18 +57,48 @@ func main() {
 
 	logger.L().Info("server is starting", "port", cfg.HttpServer.Port, "production", config.IsProduction())
 
-	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc := setupservice(cfg)
+	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc := setupservice(cfg)
+
+	// زمان‌بند پیام خودکار روانشناس: هر روز ساعت ۸ شبِ ایران، برای کاربرانِ تحت نظارتی
+	// که هنوز پیامی نگرفته‌اند، سیستم پیام دلگرم‌کننده می‌فرستد.
+	startSupervisionScheduler(supervisionSvc)
 
 	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc, journalSvc,
-		exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc)
+		exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc)
 
 	server.Server()
 
 }
 
+// startSupervisionScheduler یک goroutine که هر روز ساعت ۲۰:۰۰ به‌وقت ایران پیام‌های خودکار را می‌فرستد.
+func startSupervisionScheduler(svc supervisionservice.Service) {
+	iranLoc := time.FixedZone("IRST", 12600) // UTC+03:30
+
+	go func() {
+		for {
+			now := time.Now().In(iranLoc)
+			// هدف: امروز ساعت ۲۰:۰۰
+			next := time.Date(now.Year(), now.Month(), now.Day(), 20, 0, 0, 0, iranLoc)
+			if !next.After(now) {
+				// اگر از ۸ شب امروز گذشته، برای فردا برنامه‌ریزی کن
+				next = next.Add(24 * time.Hour)
+			}
+
+			time.Sleep(time.Until(next))
+
+			sent, err := svc.RunDailyFallback(context.Background())
+			if err != nil {
+				logger.L().Error("supervision fallback failed", "error", err.Error())
+			} else {
+				logger.L().Info("supervision fallback sent", "count", sent)
+			}
+		}
+	}()
+}
+
 func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service, sessionservice.Service,
 	journalservice.Service, exerciseservice.Service, assessmentservice.Service, dashboardservice.Service, adminservice.Service,
-	commitmentservice.Service) {
+	commitmentservice.Service, supervisionservice.Service) {
 
 	authSvc := authservice.New(cfg.Auth)
 
@@ -105,5 +138,8 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	commitmentSvc := commitmentservice.New(commitmentRepo, userSvc, appCache)
 
-	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc
+	SupervisionRepo := postgressupervision.New(MyPostgresgresRepo.DB)
+	supervisionSvc := supervisionservice.New(SupervisionRepo)
+
+	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc
 }

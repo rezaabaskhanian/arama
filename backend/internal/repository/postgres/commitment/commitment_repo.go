@@ -8,6 +8,19 @@ import (
 	"context"
 )
 
+// CountUserCompletedExercises تعداد تمرین‌های شفابخشِ تکمیل‌شده‌ی کاربر را می‌شمارد.
+// این عدد برای «باز شدن» تمرین‌های واقعی زندگی استفاده می‌شود (گِیت فعال‌سازی).
+func (d DB) CountUserCompletedExercises(ctx context.Context, userID string) (int, error) {
+	const op = "postgrescommitment.CountUserCompletedExercises"
+
+	var count int
+	err := d.conn.QueryRow(ctx, `SELECT COUNT(*) FROM user_exercises WHERE user_id = $1`, userID).Scan(&count)
+	if err != nil {
+		return 0, richerror.New(op).WithErr(err).WithMessage("failed to count completed exercises")
+	}
+	return count, nil
+}
+
 func (d DB) ListActiveTemplates(ctx context.Context) ([]domain.CommitmentTemplate, error) {
 	const op = "postgrescommitment.ListActiveTemplates"
 

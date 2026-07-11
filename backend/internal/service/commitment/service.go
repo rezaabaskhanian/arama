@@ -16,7 +16,14 @@ type Repository interface {
 	UpdateUserCommitment(ctx context.Context, uc domain.UserCommitment) error
 	GetUserCommitmentByID(ctx context.Context, id string, userID string) (domain.UserCommitment, error)
 	ListUserCommitments(ctx context.Context, userID string) ([]domain.UserCommitment, error)
+
+	// برای گِیت فعال‌سازی: تعداد تمرین‌های شفابخشِ تکمیل‌شده‌ی کاربر
+	CountUserCompletedExercises(ctx context.Context, userID string) (int, error)
 }
+
+// RequiredExercisesToUnlock حداقل تعداد تمرین شفابخشی که کاربر باید کامل کند
+// تا «تمرین‌های واقعی زندگی» برایش باز شود (اول کار درونی، بعد قدم در دنیای واقعی).
+const RequiredExercisesToUnlock = 3
 
 type UserService interface {
 	GetUserByIDService(ID string) (domainuser.User, error)

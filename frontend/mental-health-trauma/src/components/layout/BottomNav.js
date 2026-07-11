@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Home, ClipboardList, Wind, BookOpen, User } from 'lucide-react';
+import { Home, ClipboardList, Wind, BookOpen, User, Lightbulb } from 'lucide-react';
 
 const items = [
   { title: 'خانه', href: '/', icon: Home },
@@ -11,6 +11,7 @@ const items = [
   { title: 'تمرین', href: '/exercises', icon: Wind },
   { title: 'دفترچه', href: '/journal', icon: BookOpen },
   { title: 'پروفایل', href: '/profile', icon: User },
+  { title: 'راهنما', href: '/guide', icon: Lightbulb },
 ];
 
 export default function BottomNav() {

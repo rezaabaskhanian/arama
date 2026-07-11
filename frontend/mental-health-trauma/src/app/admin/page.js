@@ -45,8 +45,8 @@ export default function AdminDashboard() {
       title: 'کل کاربران',
       value: stats.total_users,
       icon: <Users className="w-6 h-6" />,
-      color: 'from-blue-500 to-indigo-600',
-      shadow: 'shadow-blue-200',
+      color: 'from-violet-500 to-violet-600',
+      shadow: 'shadow-violet-200',
       trend: '+۱۲٪ این ماه',
       href: '/admin/users'
     },
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
       title: 'کل تست‌ها',
       value: stats.total_assessments,
       icon: <ClipboardList className="w-6 h-6" />,
-      color: 'from-purple-500 to-indigo-600',
+      color: 'from-purple-500 to-violet-600',
       shadow: 'shadow-purple-200',
       trend: '۸۵٪ تکمیل شده',
       href: '/admin/exercises'
@@ -82,7 +82,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
-        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+        <Loader2 className="w-12 h-12 text-violet-500 animate-spin" />
         <p className="text-slate-400 font-bold">در حال دریافت اطلاعات...</p>
       </div>
     );
@@ -143,16 +143,16 @@ export default function AdminDashboard() {
         <section className="bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/80 shadow-2xl shadow-slate-200/50">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
-              <span className="w-1.5 h-6 bg-indigo-500 rounded-full" />
+              <span className="w-1.5 h-6 bg-violet-500 rounded-full" />
               دسترسی سریع
             </h2>
-            <Activity className="w-5 h-5 text-indigo-400" />
+            <Activity className="w-5 h-5 text-violet-400" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link href="/admin/users" className="group">
-              <div className="p-5 bg-white/80 backdrop-blur-md border border-white/50 rounded-[2.5rem] hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 transition-all">
-                <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-4 group-hover:scale-110 transition-transform">
+              <div className="p-5 bg-white/80 backdrop-blur-md border border-white/50 rounded-[2.5rem] hover:border-violet-200 hover:shadow-xl hover:shadow-violet-500/10 transition-all">
+                <div className="w-12 h-12 bg-violet-50 rounded-2xl flex items-center justify-center text-violet-600 mb-4 group-hover:scale-110 transition-transform">
                   <UserPlus className="w-6 h-6" />
                 </div>
                 <p className="font-black text-slate-900 tracking-tight">مدیریت کاربران</p>
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
               </div>
             ))}
 
-            <button className="w-full py-4 text-xs font-black text-indigo-500 hover:text-indigo-600 transition-colors bg-indigo-50/50 rounded-2xl hover:bg-indigo-50">
+            <button className="w-full py-4 text-xs font-black text-violet-500 hover:text-violet-600 transition-colors bg-violet-50/50 rounded-2xl hover:bg-violet-50">
               مشاهده تمام فعالیت‌ها
             </button>
           </div>

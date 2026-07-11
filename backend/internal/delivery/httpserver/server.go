@@ -10,6 +10,7 @@ import (
 	exercisehandler "aramina/internal/delivery/httpserver/exersice"
 	journalhandler "aramina/internal/delivery/httpserver/journal"
 	sessionhandler "aramina/internal/delivery/httpserver/session"
+	supervisionhandler "aramina/internal/delivery/httpserver/supervision"
 	userhandler "aramina/internal/delivery/httpserver/user"
 	adminservice "aramina/internal/service/admin"
 	assessmentservice "aramina/internal/service/assessment"
@@ -20,6 +21,7 @@ import (
 	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
 	sessionservice "aramina/internal/service/session"
+	supervisionservice "aramina/internal/service/supervision"
 	userservice "aramina/internal/service/user"
 	"fmt"
 	"net/http"
@@ -47,13 +49,15 @@ type Service struct {
 	adminHandler adminhandler.Handler
 
 	commitmentHandler commitmenthandler.Handler
+
+	supervisionHandler supervisionhandler.Handler
 }
 
 func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Service, authConfig authservice.Config,
 	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service,
 	exersiceSvc exerciseservice.Service, assessmentSvc assessmentservice.Service,
 	dashboardSvc dashboardservice.Service, adminSvc adminservice.Service,
-	commitmentSvc commitmentservice.Service) Service {
+	commitmentSvc commitmentservice.Service, supervisionSvc supervisionservice.Service) Service {
 
 	return Service{cfg: cfg, userHandler: userhandler.New(userSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
@@ -73,6 +77,8 @@ func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Ser
 		adminHandler: adminhandler.New(adminSvc, authSvc, authConfig),
 
 		commitmentHandler: commitmenthandler.New(commitmentSvc, authSvc, authConfig),
+
+		supervisionHandler: supervisionhandler.New(supervisionSvc, authSvc, authConfig),
 	}
 }
 
@@ -136,6 +142,8 @@ func (s Service) Server() {
 	s.adminHandler.SetAdminRoutes(e)
 
 	s.commitmentHandler.SetCommitmentRoutes(e)
+
+	s.supervisionHandler.SetSupervisionRoutes(e)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", s.cfg.HttpServer.Port)))
 

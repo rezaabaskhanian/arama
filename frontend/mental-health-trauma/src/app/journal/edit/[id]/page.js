@@ -68,7 +68,7 @@ export default function EditJournalPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-[#EEEBF6] flex items-center justify-center" dir="rtl">
         <DecorativeBlobs />
         <div className="relative z-10 flex flex-col items-center">
           <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-16 h-16 border-4 border-teal-200 border-t-teal-600 rounded-full mb-6" />
@@ -80,7 +80,7 @@ export default function EditJournalPage() {
 
   if (error && !content) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4" dir="rtl">
+      <div className="min-h-screen bg-[#EEEBF6] flex items-center justify-center p-4" dir="rtl">
         <DecorativeBlobs />
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 bg-white/80 backdrop-blur-xl border border-red-100 rounded-3xl p-8 text-center max-w-md shadow-2xl shadow-red-900/5">
           <p className="text-red-600 font-bold mb-6">{error}</p>
@@ -93,7 +93,7 @@ export default function EditJournalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 py-12 px-4 selection:bg-teal-100" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 py-12 px-4 selection:bg-teal-100" dir="rtl">
       <DecorativeBlobs />
       
       <div className="max-w-3xl mx-auto relative z-10 space-y-8">

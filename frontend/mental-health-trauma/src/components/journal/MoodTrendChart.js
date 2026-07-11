@@ -52,9 +52,10 @@ export default function MoodTrendChart({ days = 14 }) {
         </p>
       ) : (
         <>
-          <div className="flex items-end justify-between gap-1.5 h-40">
+          <div className="flex items-end justify-center gap-2 h-40">
             {moods.map((m, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+              <div key={i} className="flex-1 max-w-[44px] flex flex-col items-center justify-end gap-1.5 h-full">
+                <span className="text-base leading-none">{MOOD_EMOJI[m] || ''}</span>
                 <motion.div
                   initial={{ height: 0 }}
                   animate={{ height: `${(m / 5) * 100}%` }}

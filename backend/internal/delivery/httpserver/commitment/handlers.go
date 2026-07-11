@@ -13,7 +13,12 @@ import (
 func (h Handler) ListTemplates(c echo.Context) error {
 	const op = "commitmenthandler.ListTemplates"
 
-	res, err := h.commitmentSvc.ListTemplates(context.Background())
+	cl, err := claims.GetClaims(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "لطفا ابتدا وارد حساب کاربری خود شوید"})
+	}
+
+	res, err := h.commitmentSvc.ListTemplates(context.Background(), cl.UserID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 	}

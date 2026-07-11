@@ -2,450 +2,443 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
+  Wind,
+  Loader2,
+  ArrowLeft,
+  Sparkles,
+  HeartHandshake,
+  ShieldCheck,
   ClipboardList,
   BookOpen,
-  User,
+  Target,
   Flame,
-  Wind,
-  BrainCircuit,
+  ChevronLeft,
   Quote,
-  Calendar,
-  Sparkles,
-  Heart,
-  Loader2
+  RefreshCw,
 } from 'lucide-react';
-import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
-import MoodTrendChart from '@/components/journal/MoodTrendChart';
-import DailyReminder from '@/components/journal/DailyReminder';
 import {
+  getSuggestedExercises,
   getDashboardStats,
   getTodayMood,
   saveTodayMood,
-  getSuggestedExercises,
-  getLatestAssessment
 } from '@/lib/api';
 
-const ButterflyIcon = ({ className }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 10c0-2.5-2-4.5-4.5-4.5S3 7.5 3 10c0 3 4.5 9 9 9s9-6 9-9-2-4.5-4.5-4.5S12 7.5 12 10z" opacity="0.3" />
-    <path d="M12 21c-4.5 0-9-6-9-9 0-2.5 2-4.5 4.5-4.5S12 10 12 10s2-2.5 4.5-2.5 4.5 2 4.5 4.5c0 3-4.5 9-9 9z" fill="none" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M12 10v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
+const WHY = [
+  {
+    icon: HeartHandshake,
+    color: 'brand',
+    title: 'پزشک و درمانگر ناظر ۲۴ ساعته',
+    desc: 'امکان پایش عاطفی خودکار در ساعات پایانی شب و انتقال بازخورد حمایتی مستقیم توسط متخصص جهت آرام‌سازی خواب.',
+  },
+  {
+    icon: Wind,
+    color: 'calm',
+    title: 'تمرین‌های سوماتیک و تنفسی علمی',
+    desc: 'پروتکل‌های عضلانی، ضربانی و تمرینات تنفس هولوتروپیک جهت تخلیه هورمون‌های کورتیزول و بازنشانی اعصاب واگ.',
+  },
+  {
+    icon: ShieldCheck,
+    color: 'accent',
+    title: 'حریم خصوصی صددرصد امن',
+    desc: 'ذخیره‌سازی اطلاعات پایش بالینی و یادداشت‌های روزانه با امنیت کامل و بدون دسترسی‌های غیرمجاز.',
+  },
+];
 
-// export default function Home() {
-//   return (
-//     <div className="min-h-screen bg-red-500 flex items-center justify-center">
-//       <h1 className="text-6xl font-bold text-white">
-//         TAILWIND WORKING
-//       </h1>
-//     </div>
-//   );
-// }
+const GATEWAYS = [
+  { icon: Wind, color: 'brand', title: 'کتابخانه تمرین‌های شفابخش', desc: 'تمرینات عضلانی، ریلکسیشن واگ، و تنفس‌های متناوب.', cta: 'ورود به بخش', href: '/exercises' },
+  { icon: ClipboardList, color: 'calm', title: 'ارزیابی‌های بالینی', desc: 'پایش مستمر سطح تروما و آگاهی از وضعیت سیستم ایمنی.', cta: 'شروع ارزیابی', href: '/assessment' },
+  { icon: BookOpen, color: 'warm', title: 'دفترچه احساسات', desc: 'یادداشت‌برداری روزانه و پایش احساسات جهت ابراز سالم عواطف.', cta: 'ثبت یادداشت جدید', href: '/journal' },
+  { icon: Target, color: 'accent', title: 'تعهدات واقعی زندگی', desc: 'اهداف و قراردادهای شفابخشی جهت بازگشت به زندگی اجتماعی.', cta: 'مشاهده تعهدات', href: '/commitments' },
+];
+
+const MOODS = [
+  { label: 'آرامش عمیق', dot: 'bg-calm-500', value: 4 },
+  { label: 'پذیرا و شاداب', dot: 'bg-brand-500', value: 3 },
+  { label: 'خنثی و متمرکز', dot: 'bg-slate-400', value: 2 },
+  { label: 'دلتنگ یا غمگین', dot: 'bg-sky-500', value: 1 },
+  { label: 'بی‌قرار یا ناآرام', dot: 'bg-accent-500', value: 0 },
+];
+
+const QUOTES = [
+  { text: 'شجاعت یعنی هر روز دوباره انتخاب کنی که خودت را دوست داشته باشی.', by: 'برنه براون' },
+  { text: 'شفا به این معنا نیست که آسیب هرگز رخ نداده؛ یعنی دیگر کنترل زندگی‌ات را در دست ندارد.', by: 'خرد درون تو' },
+  { text: 'تو مجبور نیستی طوفان را کنترل کنی؛ کافی است یاد بگیری در دلش آرام بمانی.', by: 'ناشناس' },
+  { text: 'هر نفس عمیق، پیامی است به بدن تو: اکنون در امان هستی.', by: 'آرامینا' },
+];
+
+const COLOR = {
+  brand: { text: 'text-brand-600', bg: 'bg-brand-50', bar: 'bg-brand-500' },
+  calm: { text: 'text-calm-600', bg: 'bg-calm-50', bar: 'bg-calm-500' },
+  warm: { text: 'text-warm-500', bg: 'bg-warm-50', bar: 'bg-warm-400' },
+  accent: { text: 'text-accent-500', bg: 'bg-accent-50', bar: 'bg-accent-500' },
+};
 
 export default function DashboardPage() {
-  const [userName, setUserName] = useState('پیش‌فرض');
-  const [selectedMood, setSelectedMood] = useState(null);
+  const [userName, setUserName] = useState('');
   const [greeting, setGreeting] = useState('صبح بخیر');
-  const [isLoaded, setIsLoaded] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  const [suggestedExercises, setSuggestedExercises] = useState([]);
+  const [hasAssessment, setHasAssessment] = useState(true);
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [quoteIdx, setQuoteIdx] = useState(0);
   const [stats, setStats] = useState({
-    progress_percent: 0,
-    streak: 0,
     completed_exercises: 0,
     total_exercises: 0,
     journal_entries: 0,
-    last_assessment_date: null
+    streak: 0,
+    last_assessment_date: null,
   });
-  const [suggestedExercises, setSuggestedExercises] = useState([]);
 
   useEffect(() => {
-    // 1. Set basic UI state
-    setIsLoaded(true);
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('صبح بخیر');
     else if (hour < 18) setGreeting('عصر بخیر');
     else setGreeting('شب بخیر');
 
-    // 2. Fetch data from localStorage
     const savedName = localStorage.getItem('userName');
     if (savedName) setUserName(savedName);
 
-    // 3. Fetch data from API
     async function fetchData() {
       try {
         setLoadingData(true);
-        const traumaType = localStorage.getItem('traumaType') || 'mild';
-
-        const [dashboardData, moodData, exercisesData] = await Promise.all([
-          getDashboardStats(traumaType),
+        const traumaType = localStorage.getItem('traumaType');
+        const assessed = !!traumaType;
+        setHasAssessment(assessed);
+        const [exercisesData, dash, mood] = await Promise.all([
+          assessed ? getSuggestedExercises(2) : Promise.resolve([]),
+          getDashboardStats(traumaType || 'mild'),
           getTodayMood(),
-          getSuggestedExercises(2)
         ]);
-
-        if (dashboardData) setStats(dashboardData);
-        if (moodData && moodData.mood !== undefined) {
-          setSelectedMood(moodData.mood);
-        }
         if (exercisesData) setSuggestedExercises(exercisesData.slice(0, 2));
-
+        if (dash) setStats(dash);
+        if (mood && mood.mood !== undefined && mood.mood !== null) setSelectedMood(mood.mood);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
       } finally {
         setLoadingData(false);
       }
     }
-
     fetchData();
   }, []);
 
-  const moods = [
-    { label: 'خیلی بد', emoji: '😞', color: 'bg-red-50 text-red-500', ring: 'ring-red-200', value: 0 },
-    { label: 'بد', emoji: '😕', color: 'bg-orange-50 text-orange-500', ring: 'ring-orange-200', value: 1 },
-    { label: 'معمولی', emoji: '😐', color: 'bg-yellow-50 text-yellow-500', ring: 'ring-yellow-200', value: 2 },
-    { label: 'خوب', emoji: '🙂', color: 'bg-green-50 text-green-500', ring: 'ring-green-200', value: 3 },
-    { label: 'عالی', emoji: '😄', color: 'bg-teal-50 text-teal-500', ring: 'ring-teal-200', value: 4 },
-  ];
-
-  const handleMoodSelect = async (moodValue) => {
+  const handleMood = async (value) => {
+    setSelectedMood(value);
     try {
-      setSelectedMood(moodValue);
-      await saveTodayMood(moodValue);
+      await saveTodayMood(value);
     } catch (err) {
       console.error('Error saving mood:', err);
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
-  };
-
-  const quickActions = [
-    { title: 'تست جدید', icon: <ClipboardList className="w-6 h-6" />, color: 'bg-blue-500', link: '/assessment', bg: 'bg-blue-50' },
-    { title: 'تمرین‌ها', icon: <Wind className="w-6 h-6" />, color: 'bg-emerald-500', link: '/exercises', bg: 'bg-emerald-50' },
-    { title: 'دفترچه', icon: <BookOpen className="w-6 h-6" />, color: 'bg-purple-500', link: '/journal', bg: 'bg-purple-50' },
-    { title: 'پروفایل', icon: <User className="w-6 h-6" />, color: 'bg-orange-500', link: '/profile', bg: 'bg-orange-50' },
-  ];
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'تست نداده‌اید';
+  const formatAssessment = (dateStr) => {
+    if (!dateStr) return 'ثبت نشده';
+    const d = new Date(dateStr);
+    const today = new Date();
+    const isSame = d.toDateString() === today.toDateString();
+    if (isSame) return 'امروز';
     try {
-      const date = new Date(dateStr);
-      return new Intl.DateTimeFormat('fa-IR').format(date);
+      return new Intl.DateTimeFormat('fa-IR', { month: 'long', day: 'numeric' }).format(d);
     } catch {
       return dateStr;
     }
   };
 
   return (
-<>
+    <div className="bg-surface text-slate-800 selection:bg-brand-100" dir="rtl">
+      {/* ============ HERO تمام‌صفحه با عکس پس‌زمینه ============ */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <img src="/hero.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-900/45 via-brand-900/25 to-brand-900/70" />
 
-
-
-    <div className="min-h-screen bg-surface text-slate-800 pb-32 selection:bg-brand-100" dir="rtl">
-      <DecorativeBlobs />
-
-    
-
-      {/* Header with improved depth */}
-      <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className="sticky top-0 z-50 px-4 pt-4 pb-2"
-      >
-        <div className="max-w-6xl mx-auto bg-white/70 backdrop-blur-xl border border-white/50 rounded-[2.5rem] p-4 shadow-xl shadow-blue-900/5 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <motion.div
-              whileHover={{ rotate: 360, scale: 1.1 }}
-              transition={{ duration: 0.8, ease: "anticipate" }}
-              className="bg-gradient-to-tr from-indigo-500 to-pink-500 p-2.5 rounded-2xl shadow-lg shadow-indigo-200"
-            >
-              <ButterflyIcon className="w-7 h-7 text-white" />
-            </motion.div>
-            <div>
-              <h1 className="text-lg font-extrabold tracking-tight text-slate-900">{greeting}، {userName} عزیز</h1>
-              <p className="text-[10px] font-medium text-slate-400">امروز یک شروع تازه است ✨</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-500 transition-colors"
-            >
-              <Sparkles className="w-5 h-5" />
-            </motion.button>
-            <Link href="/profile" className="block">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="w-10 h-10 bg-gradient-to-tr from-blue-100 to-indigo-100 rounded-full border-2 border-white overflow-hidden shadow-inner flex items-center justify-center"
-              >
-                <User className="w-6 h-6 text-blue-600" />
-              </motion.div>
-            </Link>
-          </div>
-        </div>
-      </motion.header>
-
-      <motion.main
-        variants={containerVariants}
-        initial="hidden"
-        animate={isLoaded ? "visible" : "hidden"}
-        className="relative z-10 max-w-6xl mx-auto px-4 mt-8 space-y-8"
-      >
-        {/* Daily check-in reminder */}
-        <motion.div variants={itemVariants}>
-          <DailyReminder loggedToday={selectedMood !== null} />
-        </motion.div>
-
-        {/* Mood Tracker - More Glassy & Interactive */}
-        <motion.section variants={itemVariants} className="bg-white/60 backdrop-blur-md p-6 rounded-[2rem] border border-white/80 shadow-2xl shadow-slate-200 flex flex-col gap-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <span className="w-1.5 h-6 bg-blue-500 rounded-full" />
-              حس امروز تو چطوره؟
-            </h2>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-              <Heart className="w-4 h-4 fill-current" />
-            </div>
-          </div>
-
-          <div className="flex justify-between gap-3">
-            {moods.map((mood, idx) => (
-              <motion.button
-                key={idx}
-                whileHover={{ y: -5 }}
-                whileTap={{ scale: 0.9 }}
-                animate={selectedMood === mood.value ? { scale: 1.15 } : { scale: 1 }}
-                onClick={() => handleMoodSelect(mood.value)}
-                className={`flex-1 flex flex-col items-center gap-3 py-4 rounded-3xl transition-all duration-300 ${selectedMood === mood.value
-                  ? `${mood.color} ring-4 ring-offset-4 ring-white ${mood.ring} shadow-xl shadow-slate-200`
-                  : 'bg-slate-50/50 hover:bg-white hover:shadow-lg'
-                  }`}
-              >
-                <span className="text-3xl filter drop-shadow-sm">{mood.emoji}</span>
-                <span className={`text-[10px] font-bold tracking-tight ${selectedMood === mood.value ? 'opacity-100' : 'opacity-40'}`}>
-                  {mood.label}
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Mood trend chart */}
-        <motion.div variants={itemVariants}>
-          <MoodTrendChart days={14} />
-        </motion.div>
-
-        {/* Progress Card - Lush Gradient & Animation */}
-        <motion.section
-          variants={itemVariants}
-          whileHover={{ scale: 1.01 }}
-          className="group relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-700 to-indigo-900 p-7 rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(59,130,246,0.35)] text-white"
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="relative z-10 text-center px-6 max-w-3xl mx-auto flex flex-col items-center gap-8 pt-20"
         >
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
-          <div className="relative z-10 space-y-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-xs font-bold text-blue-200 uppercase tracking-widest mb-1">مسیر بهبودی</p>
-                <h3 className="text-4xl font-black">{stats.progress_percent}% <span className="text-lg font-medium text-blue-200">کامل شده</span></h3>
-              </div>
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl text-xs font-black border border-white/20 whitespace-nowrap"
-              >
-                {stats.streak} روز پیاپی 🔥
-              </motion.div>
-            </div>
+          <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 text-white text-xs font-black px-4 py-2 rounded-full">
+            <Sparkles className="w-4 h-4" />
+            {greeting}{userName ? '، ' + userName + ' عزیز' : ''}
+          </span>
 
-            <div className="relative h-4 bg-black/20 rounded-full overflow-hidden border border-white/10 p-0.5">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${stats.progress_percent}%` }}
-                transition={{ duration: 1.5, ease: "circOut" }}
-                className="h-full bg-gradient-to-r from-teal-300 to-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,0.5)] relative overflow-hidden"
-              >
-                <motion.div
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full"
-                />
-              </motion.div>
-            </div>
+          <h1 className="text-white text-5xl sm:text-7xl font-black leading-[1.1] tracking-tight drop-shadow-sm">
+            با آنچه از سر می‌گذرانی،
+            <br />
+            رشد کن 🌿
+          </h1>
 
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              {[
-                { label: 'تمرین‌ها', value: `${stats.completed_exercises} از ${stats.total_exercises}`, icon: <Wind className="w-4 h-4" /> },
-                { label: 'یادداشت‌ها', value: `${stats.journal_entries} مورد`, icon: <BookOpen className="w-4 h-4" /> }
-              ].map((stat, i) => (
-                <div key={i} className="flex items-center gap-4 bg-white/5 p-3 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-                  <div className="p-2 bg-blue-500/20 rounded-xl text-blue-200">
-                    {stat.icon}
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-blue-200">{stat.label}</p>
-                    <p className="text-sm font-black">{stat.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <p className="text-white/85 text-base sm:text-lg font-medium leading-relaxed max-w-xl">
+            آرامینا همراه توست در مسیر بهبودی؛ هر روز یک قدم کوچک برای آرامش و رشد.
+          </p>
 
-            <div className="pt-4 border-t border-white/10 flex justify-between items-center text-[11px] font-bold text-blue-100">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>آخرین پایش وضعیت:</span>
-              </div>
-              <span className="bg-white/10 px-2.5 py-1 rounded-lg">
-                {formatDate(stats.last_assessment_date)}
-              </span>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Quick Actions Grid */}
-        <motion.section variants={itemVariants} className="grid grid-cols-2 gap-5">
-          {quickActions.map((action, idx) => (
-            <Link href={action.link} key={idx} className="block">
-              <motion.div
-                whileHover={{ y: -8, shadow: "0 25px 50px -12px rgba(0,0,0,0.08)" }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-100 border border-slate-50 flex flex-col items-center gap-4 text-center group cursor-pointer transition-all duration-300"
-              >
-                <div className={`${action.bg} ${action.color.replace('bg-', 'text-')} p-4 rounded-3xl group-hover:scale-110 transition-transform duration-500 shadow-sm`}>
-                  {action.icon}
-                </div>
-                <span className="text-sm font-black text-slate-800 tracking-tight">{action.title}</span>
-              </motion.div>
-            </Link>
-          ))}
-        </motion.section>
-
-        {/* Real-world commitments CTA — ویژگی شاخص */}
-        <motion.section variants={itemVariants}>
-          <Link href="/commitments" className="block">
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-6 rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(16,185,129,0.4)] text-white flex items-center justify-between gap-4"
+          <Link href="/exercises">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="btn-accent inline-flex items-center gap-3 pr-2 pl-7 py-3 rounded-full font-black text-base shadow-2xl shadow-brand-900/30"
             >
-              <div className="relative z-10">
-                <p className="text-xs font-bold text-emerald-100 uppercase tracking-widest mb-1">تمرین‌های واقعی زندگی</p>
-                <h3 className="text-lg font-black leading-snug">قدمی در دنیای واقعی بردار 🌱</h3>
-                <p className="text-xs font-medium text-emerald-50/90 mt-1">به سالمندان سر بزن، سفر کن، مهربانی کن...</p>
-              </div>
-              <div className="relative z-10 bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20 shrink-0">
-                <Sparkles className="w-7 h-7" />
-              </div>
-            </motion.div>
+              <span className="w-10 h-10 rounded-full bg-white/85 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5 text-accent-600" />
+              </span>
+              تمرین امروزت را شروع کن
+            </motion.button>
           </Link>
-        </motion.section>
+        </motion.div>
+      </section>
 
-        {/* Suggested Exercises - More Modern Visuals */}
-        <motion.section variants={itemVariants} className="space-y-6">
-          <div className="flex justify-between items-end px-2">
-            <div>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">پیشنهادهای مخصوص تو</h2>
-              <p className="text-xs font-bold text-slate-400 mt-1">منتخب بر اساس وضعیت روحی شما</p>
+      {/* ============ چرا آرامینا ============ */}
+      <section className="max-w-6xl mx-auto px-6 sm:px-10 py-24">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <p className="text-sm font-black text-brand-500 mb-3">چرا مراجعین آرامینا را انتخاب می‌کنند؟</p>
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-snug">
+            اصول درمانی و پشتیبانی هوشمند آرامینا
+          </h2>
+          <div className="h-1 w-16 bg-brand-400 rounded-full mx-auto mt-5" />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {WHY.map((c, i) => {
+            const col = COLOR[c.color];
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-8 text-center flex flex-col items-center gap-4"
+              >
+                <span className={`w-14 h-14 rounded-2xl ${col.bg} ${col.text} flex items-center justify-center`}>
+                  <c.icon className="w-7 h-7" />
+                </span>
+                <h3 className="text-lg font-black text-slate-900">{c.title}</h3>
+                <p className="text-sm font-medium text-slate-500 leading-relaxed">{c.desc}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* نوار آماری */}
+        <div className="mt-8 bg-white/70 backdrop-blur-md rounded-[2rem] border border-white/80 shadow-xl shadow-slate-100 grid grid-cols-2 md:grid-cols-4 divide-x divide-x-reverse divide-slate-100">
+          {[
+            { value: stats.completed_exercises, label: 'تمرین‌های تکمیل‌شده' },
+            { value: stats.streak, label: 'روز استمرار و پایداری', flame: true },
+            { value: stats.journal_entries, label: 'یادداشت ثبت احساس' },
+            { value: formatAssessment(stats.last_assessment_date), label: 'آخرین وضعیت پایش', badge: true },
+          ].map((s, i) => (
+            <div key={i} className="p-7 flex flex-col items-center gap-1.5 text-center">
+              {s.badge ? (
+                <span className="bg-brand-100 text-brand-700 text-sm font-black px-4 py-1.5 rounded-full">{s.value}</span>
+              ) : (
+                <p className="text-3xl font-black text-slate-900 flex items-center gap-1.5">
+                  {s.value}
+                  {s.flame && <Flame className="w-5 h-5 text-accent-500" />}
+                </p>
+              )}
+              <p className="text-[11px] font-bold text-slate-400">{s.label}</p>
             </div>
-            <Link href="/exercises" className="text-blue-600 text-xs font-black hover:underline px-4 py-2 bg-blue-50 rounded-full transition-colors">
-              مشاهده همه
-            </Link>
-          </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="grid gap-5">
-            {loadingData ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              </div>
-            ) : suggestedExercises.length > 0 ? (
-              suggestedExercises.map((ex, i) => (
+      {/* ============ تمرین‌های پیشنهادی ============ */}
+      <section className="max-w-6xl mx-auto px-6 sm:px-10 pb-8 space-y-10">
+        <div className="flex flex-wrap gap-4 justify-between items-end">
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">پیشنهادهای مخصوص تو</h2>
+            <p className="text-sm font-bold text-slate-400 mt-2">منتخب بر اساس وضعیت روحی شما</p>
+          </div>
+          <Link href="/exercises" className="text-brand-600 text-sm font-black hover:underline px-5 py-2.5 bg-brand-50 rounded-full transition-colors">
+            مشاهده همه
+          </Link>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {loadingData ? (
+            <div className="flex justify-center p-16 md:col-span-2">
+              <Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+            </div>
+          ) : suggestedExercises.length > 0 ? (
+            suggestedExercises.map((ex, i) => {
+              const info = ex.exercise_info || ex;
+              return (
                 <motion.div
-                  key={i}
-                  whileHover={{ x: -10 }}
-                  className="group relative bg-white p-5 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 flex justify-between items-center transition-all overflow-hidden"
+                  key={info.id || i}
+                  whileHover={{ y: -6 }}
+                  className="group relative bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 flex justify-between items-center transition-all overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b opacity-20 from-blue-500 to-indigo-600" />
+                  <div className={`absolute top-0 right-0 w-2 h-full bg-gradient-to-b opacity-20 ${info.is_completed ? 'from-emerald-500 to-teal-600' : 'from-brand-500 to-brand-700'}`} />
                   <div className="flex items-center gap-5 relative z-10">
-                    <div className="bg-blue-50 p-4 rounded-[1.5rem] text-blue-500 shadow-inner group-hover:rotate-12 transition-transform duration-500">
+                    <div className={`p-4 rounded-[1.5rem] shadow-inner group-hover:rotate-12 transition-transform duration-500 ${info.is_completed ? 'bg-emerald-50 text-emerald-500' : 'bg-brand-50 text-brand-600'}`}>
                       <Wind className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-slate-900">{ex.title}</h4>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-lg font-extrabold text-slate-900">{info.title}</h4>
+                        {info.is_completed && (
+                          <span className="bg-emerald-100/60 text-emerald-600 text-[9px] font-black px-2 py-0.5 rounded-full">انجام شده</span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map(s => <div key={s} className={`w-1.5 h-1.5 rounded-full ${s <= (ex.difficulty || 3) ? 'bg-amber-400' : 'bg-slate-200'}`} />)}
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{ex.duration_minutes} دقیقه</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{info.duration} دقیقه</span>
+                        <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{info.trauma_type}</span>
                       </div>
                     </div>
                   </div>
-                  <Link href={`/exercises/${ex.id}`}>
+                  <Link href={`/exercises/${info.id}`}>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-7 py-3 rounded-2xl text-xs font-black shadow-lg shadow-blue-200 group-hover:shadow-blue-300 transition-all"
+                      className="bg-gradient-to-r from-brand-500 to-brand-700 text-white px-7 py-3 rounded-2xl text-xs font-black shadow-lg shadow-brand-200 group-hover:shadow-brand-300 transition-all"
                     >
-                      شروع
+                      {info.is_completed ? 'بازبینی' : 'شروع'}
                     </motion.button>
                   </Link>
                 </motion.div>
-              ))
-            ) : (
-              <p className="text-center text-slate-400 text-sm py-8 bg-white/40 rounded-[2rem] border border-dashed border-slate-200">
-                تمرینی برای نمایش وجود ندارد
+              );
+            })
+          ) : !hasAssessment ? (
+            <div className="md:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-10 text-center flex flex-col items-center gap-4">
+              <span className="w-16 h-16 rounded-[1.5rem] bg-brand-50 text-brand-500 flex items-center justify-center">
+                <ClipboardList className="w-8 h-8" />
+              </span>
+              <h3 className="text-lg font-black text-slate-900">ابتدا ارزیابی را انجام بده</h3>
+              <p className="text-sm font-bold text-slate-400 max-w-md leading-relaxed">
+                تمرین‌های شفابخش تا وقتی ارزیابی وضعیت را کامل نکرده‌ای باز نمی‌شوند. با یک ارزیابی کوتاه، مسیر شخصی تو ساخته می‌شود.
               </p>
-            )}
-          </div>
-        </motion.section>
-
-        {/* Motivation Quote - Elegant Amber Centerpiece */}
-        <motion.section
-          variants={itemVariants}
-          className="relative group p-8 rounded-[2.5rem] border-2 border-amber-50 bg-amber-50/30 overflow-hidden text-center"
-        >
-          <Quote className="absolute -top-4 -right-4 w-20 h-20 text-amber-200/20 rotate-12" />
-          <Quote className="absolute -bottom-4 -left-4 w-20 h-20 text-amber-200/20 -rotate-12" />
-
-          <div className="relative z-10 space-y-4">
-            <div className="flex justify-center mb-2">
-              <div className="h-1 w-12 bg-gradient-to-r from-transparent via-amber-300 to-transparent rounded-full" />
+              <Link href="/assessment" className="btn-accent inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-black shadow-lg shadow-accent-500/20">
+                <ClipboardList className="w-5 h-5" />
+                شروع ارزیابی
+              </Link>
             </div>
-            <p className="text-base font-bold italic text-amber-900/80 leading-relaxed max-w-sm mx-auto">
-              "شفا به معنای این نیست که آسیب هرگز رخ نداده است. شفا به این معناست که آن آسیب دیگر کنترل زندگی تو را در دست ندارد."
+          ) : (
+            <p className="text-center text-slate-400 text-sm py-16 bg-white/40 rounded-[2rem] border border-dashed border-slate-200 md:col-span-2">
+              تمرینی برای نمایش وجود ندارد
             </p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600/60">— خرد درون تو</p>
-          </div>
-        </motion.section>
-      </motion.main>
-
-      {/* Modern Footer Branding */}
-      <footer className="mt-16 pb-12 flex flex-col items-center gap-4 opacity-40">
-        <div className="flex items-center gap-3 grayscale group hover:grayscale-0 transition-all duration-700">
-          <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center p-1.5 group-hover:bg-indigo-100 transition-colors">
-            <ButterflyIcon className="w-full h-full text-slate-400 group-hover:text-indigo-500 transition-colors" />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[.25em] text-slate-500">Mindful Recovery</span>
+          )}
         </div>
+      </section>
+
+      {/* ============ درگاه‌های منو ============ */}
+      <section className="max-w-6xl mx-auto px-6 sm:px-10 py-16 space-y-8">
+        <h2 className="text-xl font-black text-slate-900 flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 bg-brand-500 rounded-full" />
+          بخش‌های شفابخش و درگاه‌های منو
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {GATEWAYS.map((g, i) => {
+            const col = COLOR[g.color];
+            return (
+              <Link href={g.href} key={i} className="block">
+                <motion.div
+                  whileHover={{ y: -6 }}
+                  className="h-full bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-7 flex flex-col gap-4 group"
+                >
+                  <span className={`w-[3.25rem] h-[3.25rem] rounded-2xl ${col.bg} ${col.text} flex items-center justify-center`}>
+                    <g.icon className="w-6 h-6" />
+                  </span>
+                  <div className="flex-1">
+                    <h3 className="text-base font-black text-slate-900">{g.title}</h3>
+                    <p className="text-xs font-medium text-slate-500 leading-relaxed mt-2">{g.desc}</p>
+                  </div>
+                  <span className={`inline-flex items-center gap-1 text-xs font-black ${col.text} group-hover:gap-2 transition-all`}>
+                    <ChevronLeft className="w-4 h-4" />
+                    {g.cta}
+                  </span>
+                </motion.div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ============ مود امروز + پیام خودمراقبتی + نقل‌قول ============ */}
+      <section className="max-w-6xl mx-auto px-6 sm:px-10 pb-24 space-y-8">
+        <div className="flex flex-wrap gap-3 justify-between items-center">
+          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 bg-brand-500 rounded-full" />
+            وضعیت انرژی و عواطف امروز شما چطور است؟
+          </h2>
+          <span className="bg-brand-50 text-brand-600 text-[11px] font-black px-3.5 py-1.5 rounded-full">پایش عاطفی روزانه</span>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* مود + پیام خودمراقبتی */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {MOODS.map((m) => {
+                const active = selectedMood === m.value;
+                return (
+                  <motion.button
+                    key={m.value}
+                    whileHover={{ y: -4 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => handleMood(m.value)}
+                    className={`flex flex-col items-center gap-2.5 py-5 rounded-[1.5rem] border transition-all ${
+                      active
+                        ? 'bg-white border-brand-300 ring-4 ring-brand-100 shadow-xl shadow-slate-200'
+                        : 'bg-white/60 border-slate-100 hover:bg-white hover:shadow-lg'
+                    }`}
+                  >
+                    <span className={`w-4 h-4 rounded-full ${m.dot} ${active ? 'ring-4 ring-white' : ''}`} />
+                    <span className={`text-xs font-black ${active ? 'text-slate-800' : 'text-slate-500'}`}>{m.label}</span>
+                    <span className={`text-[9px] font-black tracking-widest ${active ? 'text-brand-600' : 'text-slate-300'}`}>
+                      {active ? 'فعال' : 'انتخاب'}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-7 flex items-start gap-5">
+              <span className="shrink-0 w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                <HeartHandshake className="w-6 h-6" />
+              </span>
+              <div>
+                <p className="text-xs font-black text-brand-600 mb-1.5">پیام خودمراقبتی آرامینا:</p>
+                <p className="text-sm font-bold text-slate-600 leading-relaxed">
+                  {selectedMood !== null && selectedMood <= 1
+                    ? `${userName ? userName + ' جان، ' : ''}می‌دانم امروز حالت سنگین است. لازم نیست قوی باشی؛ فقط یک نفس عمیق بکش و بگذار این لحظه بگذرد. ما کنارت هستیم. 💜`
+                    : `${userName ? userName + ' جان، ' : ''}خوشحالیم که امروز حس شادابی و پذیرش داری. آماده‌ای یک تمرین خودمراقبتیِ لذت‌بخش انجام دهی تا این جریان نشاط تقویت شود؟`}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* نقل‌قول */}
+          <div className="relative bg-brand-600 rounded-[2rem] p-8 text-white shadow-2xl shadow-brand-900/20 overflow-hidden flex flex-col justify-between">
+            <Quote className="absolute -top-3 -left-3 w-24 h-24 text-white/10" />
+            <div className="relative z-10 space-y-4">
+              <Quote className="w-8 h-8 text-white/40" />
+              <motion.p
+                key={quoteIdx}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-lg font-bold leading-relaxed italic"
+              >
+                «{QUOTES[quoteIdx].text}»
+              </motion.p>
+              <p className="text-sm font-black text-brand-100">— {QUOTES[quoteIdx].by}</p>
+            </div>
+            <button
+              onClick={() => setQuoteIdx((i) => (i + 1) % QUOTES.length)}
+              className="relative z-10 mt-6 inline-flex items-center gap-2 self-start bg-white/15 hover:bg-white/25 border border-white/20 px-4 py-2 rounded-full text-xs font-black transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              جمله بعدی
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* فوتر */}
+      <footer className="border-t border-slate-200/60 py-10 flex flex-col items-center gap-3 opacity-50">
+        <span className="text-xl font-black text-slate-400">آرامینا</span>
+        <span className="text-[10px] font-black uppercase tracking-[.25em] text-slate-400">Mindful Recovery</span>
       </footer>
     </div>
-</>
-    
-  
   );
 }

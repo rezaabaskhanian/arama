@@ -1,0 +1,114 @@
+package supervisionservice
+
+import (
+	domain "aramina/internal/domain/supervision"
+	"aramina/internal/pkg/richerror"
+	"aramina/internal/service/supervision/dto"
+	"context"
+)
+
+func toMessageDTO(m domain.Message) dto.MessageDTO {
+	senderName := m.SenderName
+	if m.IsAuto || m.SenderID == "" {
+		senderName = "سیستم آرامینا"
+	}
+	return dto.MessageDTO{
+		ID:         m.ID,
+		Body:       m.Body,
+		SenderName: senderName,
+		IsAuto:     m.IsAuto,
+		CreatedAt:  m.CreatedAt,
+	}
+}
+
+// ToggleSupervision درخواست/لغو نظارت روانشناس توسط کاربر
+func (s Service) ToggleSupervision(ctx context.Context, userID string, wants bool) error {
+	const op = "supervisionservice.ToggleSupervision"
+	if err := s.repo.SetWantsSupervision(ctx, userID, wants); err != nil {
+		return richerror.New(op).WithErr(err)
+	}
+	return nil
+}
+
+// GetStatus وضعیت نظارت + پیام‌های کاربر
+func (s Service) GetStatus(ctx context.Context, userID string) (dto.StatusResponse, error) {
+	const op = "supervisionservice.GetStatus"
+
+	wants, err := s.repo.GetWantsSupervision(ctx, userID)
+	if err != nil {
+		return dto.StatusResponse{}, richerror.New(op).WithErr(err)
+	}
+
+	msgs, err := s.repo.ListMessagesForUser(ctx, userID)
+	if err != nil {
+		return dto.StatusResponse{}, richerror.New(op).WithErr(err)
+	}
+
+	out := make([]dto.MessageDTO, 0, len(msgs))
+	for _, m := range msgs {
+		out = append(out, toMessageDTO(m))
+	}
+
+	return dto.StatusResponse{WantsSupervision: wants, Messages: out}, nil
+}
+
+// ListSupervised فهرست کاربرانِ درخواست‌کننده‌ی نظارت (پنل روانشناس)
+func (s Service) ListSupervised(ctx context.Context) (dto.SupervisedListResponse, error) {
+	const op = "supervisionservice.ListSupervised"
+
+	users, err := s.repo.ListSupervisedUsers(ctx)
+	if err != nil {
+		return dto.SupervisedListResponse{}, richerror.New(op).WithErr(err)
+	}
+
+	out := make([]dto.SupervisedUserDTO, 0, len(users))
+	for _, u := range users {
+		out = append(out, dto.SupervisedUserDTO{
+			UserID:        u.UserID,
+			Nickname:      u.Nickname,
+			Phone:         u.Phone,
+			LatestMood:    u.LatestMood,
+			LastMessageAt: u.LastMessageAt,
+			MessageCount:  u.MessageCount,
+		})
+	}
+	return dto.SupervisedListResponse{Users: out}, nil
+}
+
+// MessagesForUser پیام‌های یک کاربر برای نمایش در پنل روانشناس
+func (s Service) MessagesForUser(ctx context.Context, userID string) (dto.MessagesResponse, error) {
+	const op = "supervisionservice.MessagesForUser"
+
+	msgs, err := s.repo.ListMessagesForUser(ctx, userID)
+	if err != nil {
+		return dto.MessagesResponse{}, richerror.New(op).WithErr(err)
+	}
+	out := make([]dto.MessageDTO, 0, len(msgs))
+	for _, m := range msgs {
+		out = append(out, toMessageDTO(m))
+	}
+	return dto.MessagesResponse{Messages: out}, nil
+}
+
+// SendMessage روانشناس/ادمین برای کاربر پیام می‌فرستد
+func (s Service) SendMessage(ctx context.Context, senderID, userID, body string) error {
+	const op = "supervisionservice.SendMessage"
+
+	if len([]rune(body)) == 0 {
+		return richerror.New(op).WithMessage("متن پیام نمی‌تواند خالی باشد")
+	}
+
+	// فقط برای کاربری که واقعاً درخواست نظارت داده پیام بفرست
+	wants, err := s.repo.GetWantsSupervision(ctx, userID)
+	if err != nil {
+		return richerror.New(op).WithErr(err)
+	}
+	if !wants {
+		return richerror.New(op).WithMessage("این کاربر درخواست نظارت روانشناس نداده است")
+	}
+
+	if err := s.repo.SaveMessage(ctx, userID, senderID, body, false); err != nil {
+		return richerror.New(op).WithErr(err)
+	}
+	return nil
+}

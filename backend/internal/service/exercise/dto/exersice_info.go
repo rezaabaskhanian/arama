@@ -14,6 +14,8 @@ type ExerciseInfo struct {
 	Duration    int       `json:"duration"`
 	Order       int       `json:"order"`
 	IsActive    bool      `json:"is_active"`
+	IsCompleted bool      `json:"is_completed"`
+	IsLocked    bool      `json:"is_locked"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

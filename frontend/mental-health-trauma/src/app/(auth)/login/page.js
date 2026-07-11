@@ -90,7 +90,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col justify-center items-center p-4 selection:bg-blue-100 overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-[#EEEBF6] text-slate-800 flex flex-col justify-center items-center p-4 selection:bg-violet-100 overflow-hidden" dir="rtl">
       <DecorativeBlobs />
 
       <motion.div
@@ -111,7 +111,7 @@ export default function LoginPage() {
               delay: 0.2
             }}
             whileHover={{ rotate: 360, scale: 1.1 }}
-            className="w-20 h-20 bg-gradient-to-tr from-indigo-500 to-pink-500 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-2xl shadow-indigo-200"
+            className="w-20 h-20 bg-gradient-to-tr from-violet-500 to-pink-500 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-2xl shadow-violet-200"
           >
             <ButterflyIcon className="w-10 h-10 text-white" />
           </motion.div>
@@ -141,14 +141,14 @@ export default function LoginPage() {
           className="bg-white/70 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/50 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] relative overflow-hidden"
         >
           {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100/30 blur-3xl -mr-16 -mt-16 rounded-full" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-100/30 blur-3xl -ml-16 -mb-16 rounded-full" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-violet-100/30 blur-3xl -mr-16 -mt-16 rounded-full" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-violet-100/30 blur-3xl -ml-16 -mb-16 rounded-full" />
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             {/* Phone Input */}
             <div className="space-y-2">
               <label className="block text-sm font-black text-slate-700 mr-1 flex items-center gap-2">
-                <Phone className="w-4 h-4 text-blue-500" />
+                <Phone className="w-4 h-4 text-violet-500" />
                 شماره موبایل
               </label>
               <div className="relative group">
@@ -157,7 +157,7 @@ export default function LoginPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                   placeholder="۰۹۱۲۱۲۳۴۵۶۷"
                   disabled={loading}
                 />
@@ -168,12 +168,12 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <label className="block text-sm font-black text-slate-700 flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-blue-500" />
+                  <Lock className="w-4 h-4 text-violet-500" />
                   رمز عبور
                 </label>
                 <Link
                   href="/reset-password"
-                  className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                  className="text-xs font-bold text-violet-600 hover:text-violet-700 transition-colors"
                 >
                   فراموشی رمز؟
                 </Link>
@@ -184,7 +184,7 @@ export default function LoginPage() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                   placeholder="••••••••"
                   disabled={loading}
                 />
@@ -212,7 +212,7 @@ export default function LoginPage() {
               disabled={loading}
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative w-full bg-gradient-to-r from-blue-600 via-indigo-700 to-indigo-900 text-white px-6 py-4 rounded-2xl font-black shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] hover:shadow-[0_15px_35px_-12px_rgba(59,130,246,0.6)] transition-all duration-300 overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
+              className="group relative w-full bg-gradient-to-r from-violet-600 via-violet-700 to-violet-900 text-white px-6 py-4 rounded-2xl font-black shadow-[0_10px_30px_-10px_rgba(59,130,246,0.5)] hover:shadow-[0_15px_35px_-12px_rgba(59,130,246,0.6)] transition-all duration-300 overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <div className="relative z-10 flex items-center justify-center gap-3">
                 {loading ? (
@@ -242,7 +242,7 @@ export default function LoginPage() {
               هنوز حساب نداری؟{' '}
               <Link
                 href="/register"
-                className="text-blue-600 font-black hover:underline inline-flex items-center gap-1 group"
+                className="text-violet-600 font-black hover:underline inline-flex items-center gap-1 group"
               >
                 ثبت‌نام رایگان
                 <UserPlus className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -276,8 +276,8 @@ export default function LoginPage() {
         className="mt-12 flex flex-col items-center gap-4 opacity-30"
       >
         <div className="flex items-center gap-3 grayscale group hover:grayscale-0 transition-all duration-700">
-          <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center p-1.5 group-hover:bg-indigo-100 transition-colors">
-            <ButterflyIcon className="w-full h-full text-slate-400 group-hover:text-indigo-500 transition-colors" />
+          <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center p-1.5 group-hover:bg-violet-100 transition-colors">
+            <ButterflyIcon className="w-full h-full text-slate-400 group-hover:text-violet-500 transition-colors" />
           </div>
           <span className="text-[10px] font-black uppercase tracking-[.25em] text-slate-500">Mindful Recovery</span>
         </div>

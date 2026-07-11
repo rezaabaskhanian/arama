@@ -230,8 +230,8 @@ func (d DB) UpsertTodayMood(ctx context.Context, userID string, mood int) error 
 	query := `
         INSERT INTO journal_moods (id, user_id, mood, date, created_at)
         VALUES (gen_random_uuid(), $1, $2, CURRENT_DATE, NOW())
-        ON CONFLICT (user_id, date) 
-        DO UPDATE SET mood = $2, updated_at = NOW()
+        ON CONFLICT (user_id, date)
+        DO UPDATE SET mood = $2
     `
 
 	_, err := d.conn.Exec(ctx, query, userID, mood)

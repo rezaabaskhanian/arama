@@ -14,8 +14,18 @@ func (h Handler) GetExerciseByTrauma(c echo.Context) error {
 
 	traumaType := c.Param("traumaType")
 
+	// احراز هویت اختیاری: اگر توکن معتبر ارسال شده باشد، userID را برای علامت‌گذاری
+	// تمرین‌های تکمیل‌شده استخراج می‌کنیم؛ در غیر این صورت لیست عمومی برگردانده می‌شود.
+	var userID string
+	if authHeader := c.Request().Header.Get("Authorization"); authHeader != "" {
+		if userClaims, err := h.authSvc.ParseToken(authHeader); err == nil && userClaims != nil {
+			userID = userClaims.UserID
+		}
+	}
+
 	req := dto.GetByTraumaTypeRequest{
 		TraumaType: traumaType,
+		UserID:     userID,
 	}
 
 	res, err := h.exerciseSvc.GetExercisByTraumaType(context.Background(), req)
