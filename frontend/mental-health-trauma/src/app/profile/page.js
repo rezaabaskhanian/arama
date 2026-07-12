@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { getUserProfile, getUserProgress, getDashboardStats, getMyCommitments, getTodayMood } from '@/lib/api';
-import { startAmbient, stopAmbient, setAmbientVolume } from '@/lib/ambientSound';
 import {
   Settings,
   ShieldCheck,
-  Volume2,
   Sun,
   Moon,
   Save,
@@ -19,13 +17,11 @@ import {
   CheckCircle2,
   Bot,
   ArrowLeft,
-  Play,
-  Pause,
 } from 'lucide-react';
 
 const TRAUMA_LABELS = { mild: 'خفیف', moderate: 'متوسط', severe: 'شدید', complex: 'پیچیده' };
 const PREF_KEY = 'aramina_prefs';
-const DEFAULT_PREFS = { notify: true, volume: 75, theme: 'day' };
+const DEFAULT_PREFS = { notify: true, theme: 'day' };
 
 // نسخه‌ی سمت‌کلاینتِ پیام خودکار ناظر (منطبق با autoMessageForMood در بک‌اند) —
 // برای شبیه‌سازیِ پیامی که سیستم بعد از ساعت ۸ شب می‌فرستد.
@@ -50,25 +46,6 @@ export default function ProfilePage() {
   const [report, setReport] = useState({ exercises: 0, commitments: 0 });
   const [mood, setMood] = useState(null);
   const [saved, setSaved] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
-
-  // توقف پیش‌نمایش صدا هنگام خروج از صفحه
-  useEffect(() => () => stopAmbient(), []);
-
-  const togglePreview = () => {
-    if (previewing) {
-      stopAmbient();
-      setPreviewing(false);
-    } else {
-      startAmbient(prefs.volume / 100);
-      setPreviewing(true);
-    }
-  };
-
-  const onVolumeChange = (v) => {
-    setPrefs((p) => ({ ...p, volume: v }));
-    if (previewing) setAmbientVolume(v / 100);
-  };
 
   useEffect(() => {
     (async () => {
@@ -141,7 +118,7 @@ export default function ProfilePage() {
   };
 
   const handleReset = () => {
-    if (!confirm('تنظیمات محلی (اعلان‌ها، صدا و حالت نمایش) به حالت پیش‌فرض بازگردد؟')) return;
+    if (!confirm('تنظیمات محلی (اعلان‌ها و حالت نمایش) به حالت پیش‌فرض بازگردد؟')) return;
     setPrefs(DEFAULT_PREFS);
     localStorage.setItem(PREF_KEY, JSON.stringify(DEFAULT_PREFS));
     flashSaved();
@@ -182,7 +159,7 @@ export default function ProfilePage() {
               </span>
               <div>
                 <h1 className="text-2xl font-black text-slate-900">تنظیمات حساب و حریم خصوصی</h1>
-                <p className="text-sm font-bold text-slate-400 mt-1">پروفایل کاربری، اعلان‌ها و ابزارهای صوتی</p>
+                <p className="text-sm font-bold text-slate-400 mt-1">پروفایل کاربری و اعلان‌ها</p>
               </div>
             </div>
 
@@ -211,40 +188,6 @@ export default function ProfilePage() {
                 <p className="text-xs font-bold text-slate-400 mt-1">ارسال یادآورهای خودمراقبتی و تنفس پاراسمپاتیک در طول روز</p>
               </div>
               <Toggle on={prefs.notify} onClick={toggleNotify} />
-            </div>
-
-            {/* اسلایدر امواج آلفا */}
-            <div className="bg-slate-50/60 rounded-[1.5rem] p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-black text-slate-800">شدت فرکانس‌های امواج صوتی آلفا</p>
-                  <p className="text-xs font-bold text-slate-400 mt-1">ولوم ملایم باد، باران و فرکانس‌های مغزی در تمرین‌ها</p>
-                </div>
-                <Volume2 className="w-6 h-6 text-brand-500" />
-              </div>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={prefs.volume}
-                  onChange={(e) => onVolumeChange(Number(e.target.value))}
-                  className="flex-1 accent-brand-600"
-                />
-                <span className="font-black text-slate-700 w-12 text-left">{prefs.volume}%</span>
-              </div>
-              <button
-                onClick={togglePreview}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-sm transition-colors ${
-                  previewing ? 'bg-rose-50 text-rose-600' : 'bg-brand-50 text-brand-600 hover:bg-brand-100'
-                }`}
-              >
-                {previewing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                {previewing ? 'توقف پیش‌نمایش صدا' : 'پخش نمونه‌ی صدای آلفا'}
-              </button>
-              <p className="text-[11px] font-bold text-slate-400">
-                برای تجربه‌ی کامل، این صدا هنگام تمرین تنفس در بخش «تنفس» پخش می‌شود. برای شنیدن امواج آلفا هدفون بگذار.
-              </p>
             </div>
 
             {/* حفاظت داده */}
@@ -354,7 +297,7 @@ export default function ProfilePage() {
             <section className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100 p-7 space-y-4">
               <h2 className="text-lg font-black text-slate-900">اقدامات اضطراری داده‌ها</h2>
               <p className="text-xs font-bold text-slate-400 leading-relaxed">
-                با فشردن کلید زیر، تنظیمات محلی شما (اعلان‌ها، صدا و حالت نمایش) به مقادیر پیش‌فرض باز می‌گردد.
+                با فشردن کلید زیر، تنظیمات محلی شما (اعلان‌ها و حالت نمایش) به مقادیر پیش‌فرض باز می‌گردد.
               </p>
               <button
                 onClick={handleReset}

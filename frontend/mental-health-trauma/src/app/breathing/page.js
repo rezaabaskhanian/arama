@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { ArrowRight, Wind, Play, Square, Pause } from 'lucide-react';
 import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
-import { startAmbient, stopAmbient, readSavedVolume } from '@/lib/ambientSound';
 
 export default function BreathingPage() {
   const [isActive, setIsActive] = useState(false);
@@ -40,13 +39,6 @@ export default function BreathingPage() {
       setTimer(4);
     }
     return () => clearInterval(interval);
-  }, [isActive]);
-
-  // صدای محیطی امواج آلفا: هنگام فعال‌بودن تمرین پخش، در غیر این‌صورت خاموش
-  useEffect(() => {
-    if (isActive) startAmbient(readSavedVolume());
-    else stopAmbient();
-    return () => stopAmbient();
   }, [isActive]);
 
   const toggleExercise = () => {
