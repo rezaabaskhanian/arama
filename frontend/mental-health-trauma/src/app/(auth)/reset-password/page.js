@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   KeyRound,
-  User,
+  Phone,
   Lock,
   CheckCircle2,
   ArrowLeft,
@@ -36,7 +36,7 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [formData, setFormData] = useState({
-    nickname: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   });
@@ -57,8 +57,13 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.nickname.trim()) {
-      setError('نام کاربری را وارد کنید');
+    if (!formData.phone.trim()) {
+      setError('شماره موبایل را وارد کنید');
+      return;
+    }
+
+    if (!/^09\d{9}$/.test(formData.phone.trim())) {
+      setError('شماره موبایل معتبر نیست');
       return;
     }
 
@@ -82,7 +87,7 @@ export default function ResetPasswordPage() {
     setSuccess('');
 
     try {
-      const response = await resetPassword(formData.nickname, formData.password);
+      const response = await resetPassword(formData.phone.trim(), formData.password);
       setSuccess('رمز عبور با موفقیت تغییر کرد');
 
       setTimeout(() => {
@@ -153,22 +158,22 @@ export default function ResetPasswordPage() {
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-100/30 blur-3xl -ml-16 -mb-16 rounded-full" />
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {/* Nickname Input */}
+            {/* Phone Input */}
             <div className="space-y-2">
               <label className="block text-sm font-black text-slate-700 mr-1 flex items-center gap-2">
-                <User className="w-4 h-4 text-orange-500" />
-                نام کاربری
+                <Phone className="w-4 h-4 text-orange-500" />
+                شماره موبایل
               </label>
               <div className="relative group">
                 <input
-                  type="text"
-                  name="nickname"
-                  value={formData.nickname}
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
-                  placeholder="نام کاربری خود را وارد کنید"
+                  placeholder="۰۹۱۲۱۲۳۴۵۶۷"
                   disabled={loading}
-                  autoComplete="username"
+                  autoComplete="tel"
                 />
               </div>
             </div>

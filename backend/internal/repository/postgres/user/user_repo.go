@@ -6,7 +6,6 @@ import (
 	"aramina/internal/pkg/errmesg"
 	"aramina/internal/pkg/richerror"
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -148,15 +147,13 @@ func (r DB) GetUserByPhoneNumber(phone string) (domain.User, error) {
 }
 
 // ResetPassword implements [userservice.Repository].
-func (r DB) ResetPassword(nikname string, hashedPassword uservalueobject.Password) error {
+func (r DB) ResetPassword(phone string, hashedPassword uservalueobject.Password) error {
 
 	const op = "postgres.ResetPassword"
 
-	query := `UPDATE users SET password_hash = $1 WHERE nickname = $2`
+	query := `UPDATE users SET password_hash = $1 WHERE phone = $2`
 
-	fmt.Println(hashedPassword, nikname, "hashedPassword, nikname")
-
-	cmdTag, err := r.conn.Exec(context.Background(), query, hashedPassword.Hash(), nikname)
+	cmdTag, err := r.conn.Exec(context.Background(), query, hashedPassword.Hash(), phone)
 
 	if err != nil {
 		return richerror.New(op).WithErr(err)

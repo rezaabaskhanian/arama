@@ -14,10 +14,10 @@ func (s Service) ResetPassword(req dto.ResetPasswordRequest) error {
 		return richerror.New(op).WithErr(err).WithMessage("dont create password")
 	}
 
-	errRepo := s.repo.ResetPassword(req.Nickname, passHash)
+	errRepo := s.repo.ResetPassword(req.Phone, passHash)
 
 	if errRepo != nil {
-		return richerror.New(op).WithErr(err).WithMessage("failed to reset password")
+		return richerror.New(op).WithErr(errRepo).WithMessage("failed to reset password")
 	}
 
 	return nil

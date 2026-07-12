@@ -59,10 +59,10 @@ export async function registerUser(userData) {
   }
 }
 
-export async function resetPassword(nickname, password) {
+export async function resetPassword(phone, password) {
   try {
     const response = await apiClient.post('/users/reset-pass', {
-      nickname,
+      phone,
       password,
     });
     return response.data;
