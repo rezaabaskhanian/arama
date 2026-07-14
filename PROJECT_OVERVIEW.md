@@ -1,7 +1,8 @@
 # آرامینا (Aramina) — اپلیکیشن همراه درمان تروما / PTSD
 
-> مستند کامل شناخت پروژه — تهیه‌شده در تاریخ ۱۴۰۵/۰۴/۱۶ (۲۰۲۶-۰۷-۰۷)
-> این فایل خلاصه‌ی هر چیزی است که از کدبیس فعلی فهمیده شده: معماری، دامنه، APIها، فرانت‌اند، و نقاط قابل بهبود.
+> مستند کامل شناخت پروژه — تهیه‌شده در ۱۴۰۵/۰۴/۱۶ (۲۰۲۶-۰۷-۰۷)، به‌روزرسانی در ۱۴۰۵/۰۴/۲۳ (۲۰۲۶-۰۷-۱۴)
+> این فایل خلاصه‌ی هر چیزی است که از کدبیس فعلی فهمیده شده: معماری، دامنه، APIها، فرانت‌اند، اپ موبایل، و نقاط قابل بهبود.
+> آخرین افزوده‌ها: ماژول همراهی روانشناس، تمرین‌های drip روزانه، اپ موبایل React Native، و پوش نوتیفیکیشن FCM (فازهای ۶ تا ۸).
 
 ---
 
@@ -35,7 +36,8 @@
 ```
 aramina/
 ├── backend/     # سرویس Go (Echo + PostgreSQL) — معماری تمیز/DDD
-└── frontend/mental-health-trauma/   # اپ Next.js 16 (App Router) + Tailwind v4
+├── frontend/mental-health-trauma/   # اپ Next.js 16 (App Router) + Tailwind v4
+└── mobile/      # اپ موبایل React Native 0.86 (RTL، فونت وزیر، پوش FCM)
 ```
 
 > نکته: در تاریخ تهیه‌ی این مستند، پروژه تازه از حالت تک‌پوشه به ساختار `backend/` + `frontend/` منتقل شده و این تغییرات هنوز در گیت commit نشده‌اند (وضعیت گیت پر از فایل‌های `D` است که در واقع «جابه‌جا» شده‌اند).
@@ -78,6 +80,8 @@ backend/
 - **user_exercises**: جدول واسط `(user_id, exercise_id, completed_at)` + امتیاز اختیاری (rating).
 - **journal_entries**: `id`, `user_id`, `content`, `mood (1..5)`, زمان‌ها. محدودیت: حداکثر ۱۰۰۰ کلمه و حداکثر ۳ ثبت در روز.
 - **crisis**: `id`, `user_id`, `current_step`, `risk_level`, `result`, زمان‌ها. (دامنه غنی‌تر از اسکیماست: level, status, score, resources, followUp).
+- **supervision_messages** (migration 012): `id`, `user_id` (گیرنده)، `sender_id` (روانشناس؛ NULL = پیام خودکار سیستم)، `body`, `is_auto`, `msg_date` (برای بررسی «پیام امروز آمده؟»)، `created_at`. به‌علاوه ستون `wants_supervision` روی `users`.
+- **device_tokens** (migration 013): توکن‌های FCM هر کاربر برای پوش نوتیفیکیشن.
 
 ### فهرست کامل Endpointها
 
@@ -126,6 +130,20 @@ backend/
 - `POST /admin/exercises`
 - `PUT  /admin/exercises/:id`
 - `DELETE /admin/exercises/:id`
+
+**Supervision / همراهی** (`/supervision`) — همه 🔒
+- `GET  /supervision/status` — آیا کاربر همراهی روانشناس را فعال کرده + پیام امروز آمده یا نه.
+- `POST /supervision/toggle` — روشن/خاموش کردن همراهی.
+- `GET  /supervision/messages` — صندوق پیام‌های همراهی کاربر (روانشناس + پیام‌های خودکار).
+
+**Supervision (کارکنان)** (`/admin/supervision`) — همه 🔒 + `staffOnly` (helper/admin)
+- `GET  /admin/supervision/users` — فهرست کاربرانِ خواهانِ همراهی + آخرین مود.
+- `GET  /admin/supervision/users/:id/messages` — تاریخچه‌ی پیام یک کاربر.
+- `POST /admin/supervision/users/:id/messages` — ارسال پیام به کاربر (فلگ `urgent` برای کانال بحران/bypass DND).
+- `POST /admin/supervision/run-fallback` — اجرای دستی پیام خودکار عصرگاهی (برای تست).
+
+**Devices** (`/devices`) — 🔒
+- `POST /devices` — ثبت توکن FCM دستگاه برای دریافت پوش نوتیفیکیشن.
 
 **Session** (`/session`) — تعریف‌شده ولی در `server.go` هنوز رجیستر نشده
 - `POST /session/create`
@@ -177,6 +195,30 @@ backend/
 - `context/AuthContext.js` — Provider ساده مبتنی بر localStorage.
 - توکن‌ها و نقش کاربر در `localStorage` نگه داشته می‌شوند (`access_token`, `userRole`, `userName`, `traumaType`).
 - هوک‌ها: `useAuth`, `useJournal`, `useExercises`, `useAssessment`.
+
+---
+
+## ۴.۵ اپ موبایل (React Native)
+
+### تکنولوژی‌ها
+- **React Native 0.86** + **React 19.2** + **TypeScript**
+- **@react-native-firebase/app** و **/messaging** برای پوش FCM
+- **@react-native-async-storage/async-storage** برای ذخیره‌ی محلی (توکن/نشست)
+- **react-native-svg** برای آیکون/نمودار، **react-native-safe-area-context**
+- فونت **وزیر** (bundle نیتیو)، چیدمان **RTL**، بدون کتابخانه‌ی ناوبری بیرونی
+
+### ساختار (`mobile/src`)
+```
+components/   Screen, ui, Gradient, InAppBanner
+context/      AuthContext
+lib/          api, storage, notifications, banner
+navigation/   RootNavigator, AppShell, TabBar, NavigationContext, AuthNavigator
+screens/      Splash, Onboarding, Login, Register, Home, Exercises, ExerciseDetail,
+              Mood, Journal, Assessment, Progress, Guide, Messages, Settings, Profile, Detail
+data/         content.ts   theme/  icons/  assets/fonts
+```
+
+> نکات فنی: AsyncStorage داده را persist می‌کند؛ patch سراسری فونت در `App.tsx` روی RN 0.86 اثر ندارد و هر استایل متن باید `fontFamily` را صریح ست کند. پکیج اندروید: `com.aramina`. فایل `google-services.json` کانفیگ کلاینت Firebase است (نه کلید محرمانه‌ی سرور).
 
 ---
 
@@ -257,6 +299,15 @@ npm install
 npm run dev               # روی پورت 3000؛ به API روی 8086 وصل می‌شود
 ```
 
+**موبایل (React Native):**
+```bash
+cd mobile
+npm install
+npm run android           # نیازمند اندروید SDK؛ google-services.json در android/app/
+# npm run ios             # فعلاً فقط اندروید ست شده (APNs/iOS باقی‌مانده)
+```
+> برای فعال‌شدن پوش، بک‌اند به `FCM_CREDENTIALS_FILE` (service-account فایربیس) نیاز دارد؛ بدون آن push بی‌سروصدا غیرفعال است.
+
 ---
 
 ## ۹.۵ آنچه در بازطراحی و توسعه اضافه شد (Changelog)
@@ -294,6 +345,27 @@ npm run dev               # روی پورت 3000؛ به API روی 8086 وصل �
 - **Makefile** + **CI/CD** (`.github/workflows/ci.yml`: build/test بک و build فرانت) + endpoint `/health`.
 
 > باقی‌مانده برای آینده: Redis واقعی (به‌جای in-memory)، Prometheus/Grafana، gRPC/event-driven، افزایش پوشش تست.
+
+### فاز ۶ — همراهی روانشناس (Supervision) + تمرین‌های drip روزانه
+- **همراهی (Supervision)**: کاربر می‌تواند بخواهد یک روانشناس هر روز احوال و تمرین‌هایش را دنبال کند و یک پیام دلگرم‌کننده دریافت کند. دامنه‌ی `supervision`، سرویس، ریپازیتوری، هندلر، و migration `012` (جدول `supervision_messages` + ستون `wants_supervision`).
+  - اگر روانشناس تا **ساعت ۸ شب** پیامی نفرستاده باشد، یک زمان‌بندِ داخلی در `main.go` (`RunDailyFallback`) بر اساس آخرین مودِ کاربر **پیام خودکار** می‌فرستد.
+  - پنل کارکنان (`helper`/`admin`) برای دیدن کاربرانِ همراهی، تاریخچه‌ی پیام و ارسال پیام (با فلگ `urgent` برای موارد بحرانی).
+- **تمرین‌های drip روزانه**: گِیت‌کردن تمرین‌ها به‌صورت «هر روز یک تکمیل، به‌ترتیب» (تغییرات در `complete_exercise` و `exercise_repo`)؛ seed تمرین‌های بیشتر (`011`).
+
+### فاز ۷ — اپ موبایل React Native
+- اپ **React Native 0.86** (React 19.2، TypeScript) در پوشه‌ی `mobile/` — کاملاً **RTL** با فونت **وزیر** (bundle نیتیو برای اندروید/iOS).
+- ناوبری سفارشی بدون کتابخانه: `RootNavigator` + `AppShell` + `TabBar` + `NavigationContext` و `AuthNavigator`.
+- احراز هویت: `LoginScreen`/`RegisterScreen`، `AuthContext`، و لایه‌ی `lib/api.ts` + `lib/storage.ts` (AsyncStorage).
+- صفحه‌ها: خانه، تمرین‌ها + جزئیات، مود، دفترچه، ارزیابی PCL-5، پیشرفت، راهنما، تنظیمات، پروفایل، پیام‌های همراهی، آنبوردینگ، اسپلش.
+- پکیج اندروید از `com.mobile` به **`com.aramina`** تغییر یافت.
+
+> نکات فنی موبایل: AsyncStorage داده را persist می‌کند؛ patch سراسری فونت در `App.tsx` روی RN 0.86 اثر ندارد و **هر استایل متن باید `fontFamily` را صریح ست کند**.
+
+### فاز ۸ — پوش نوتیفیکیشن (FCM)
+- **بک‌اند**: سرویس `push` (Firebase Cloud Messaging) + سرویس/ریپازیتوری `device` + اندپوینت `POST /devices` و migration `013` (جدول `device_tokens`). اگر `FCM_CREDENTIALS_FILE` ست نباشد، push بی‌سروصدا غیرفعال می‌ماند.
+- ارسال پوش هنگام **پاسخ روانشناس** و **پیام خودکار ۸ شب**؛ کانال بحران (`aramina_crisis`) با فلگ `urgent` برای عبور از حالت مزاحم‌نشوید (DND).
+- **موبایل**: `@react-native-firebase/messaging`، ثبت توکن، هندلر foreground/background، کانال `aramina_default`، بنر درون‌اپ (`InAppBanner`)، صندوق `MessagesScreen` و badge زنگوله.
+- **پیگیری‌های باقی‌مانده** (در `TODO.md`): تپ روی نوتیف → باز شدن مستقیم صندوق پیام؛ درخواست دسترسی DND؛ راهنمای battery-optimization؛ پشتیبانی iOS/APNs (فعلاً فقط اندروید).
 
 ## ۹. نکات فنی مهم برای توسعه‌دهنده‌ی بعدی
 - CORS فقط برای `localhost:3000` و `3001` باز است.
