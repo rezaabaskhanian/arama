@@ -14,6 +14,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { loginUser } from '@/lib/api';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
 
 const ButterflyIcon = ({ className }) => (
@@ -178,17 +179,14 @@ export default function LoginPage() {
                   فراموشی رمز؟
                 </Link>
               </div>
-              <div className="relative group">
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
-                  placeholder="••••••••"
-                  disabled={loading}
-                />
-              </div>
+              <PasswordInput
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full pr-5 pl-12 py-4 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                placeholder="••••••••"
+                disabled={loading}
+              />
             </div>
 
             {/* Error Message */}

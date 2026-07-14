@@ -14,6 +14,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { registerUser } from '@/lib/api';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import DecorativeBlobs from '@/components/layout/DecorativeBlobs';
 
 const ButterflyIcon = ({ className }) => (
@@ -211,12 +212,11 @@ export default function RegisterPage() {
                 <Lock className="w-3.5 h-3.5 text-violet-500" />
                 رمز عبور
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full pr-5 pl-12 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -228,12 +228,11 @@ export default function RegisterPage() {
                 <CheckCircle2 className="w-3.5 h-3.5 text-violet-500" />
                 تکرار رمز عبور
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
+                className="w-full pr-5 pl-12 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50 focus:bg-white transition-all duration-300 text-slate-800 placeholder:text-slate-400 font-medium"
                 placeholder="••••••••"
                 disabled={loading}
               />

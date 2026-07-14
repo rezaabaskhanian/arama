@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { User, Lightbulb, HeartHandshake } from 'lucide-react';
 
@@ -17,18 +16,9 @@ const items = [
 export default function TopNav() {
   const pathname = usePathname();
   const onHero = pathname === '/'; // فقط صفحه‌ی هوم هیروِ تمام‌صفحه دارد
-  const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    if (!onHero) return;
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [onHero]);
-
-  // شفاف و روی عکس (متن سفید) فقط وقتی بالای هیرو هستیم
-  const transparent = onHero && !scrolled;
+  // نوار بالا همیشه پس‌زمینه دارد (سفید/بلور) — دیگر روی هیرو شفاف نمی‌شود
+  const transparent = false;
 
   const iconBtn = (href, title, Icon) => {
     const active = pathname.startsWith(href);
