@@ -33,12 +33,13 @@ export const Header: React.FC<{
             </View>
           </PressableScale>
         ) : (
-          <View style={styles.backBtn} />
+          <View style={styles.spacer} />
         )}
         <Text style={styles.headerTitle} numberOfLines={1}>
           {title}
         </Text>
-        <View style={styles.backBtn} />
+        {/* transparent spacer keeps the title centred — no empty "button" box */}
+        <View style={styles.spacer} />
       </View>
     </View>
   );
@@ -91,12 +92,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  spacer: { width: 44, height: 44 },
   headerTitle: {
     flex: 1,
+    fontFamily: font.family,
     textAlign: 'center',
     color: colors.text,
     fontSize: 18,
-    fontWeight: font.black,
     writingDirection: 'rtl',
   },
 });

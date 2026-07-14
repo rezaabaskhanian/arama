@@ -85,16 +85,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   brand: {
+    fontFamily: font.family,
     color: colors.white,
     fontSize: 34,
-    fontWeight: font.black,
     textAlign: 'center',
     writingDirection: 'rtl',
   },
   tagline: {
+    fontFamily: font.family,
     color: 'rgba(255,255,255,0.8)',
     fontSize: 15,
-    fontWeight: font.medium,
     textAlign: 'center',
     marginTop: 6,
   },

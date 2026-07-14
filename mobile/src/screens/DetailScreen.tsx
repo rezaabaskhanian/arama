@@ -145,12 +145,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heroTitle: { fontSize: 22, fontWeight: font.black, color: colors.white, ...rtlText },
+  heroTitle: { fontSize: 22,  color: colors.white, ...rtlText },
   body: {
     fontSize: 15.5,
     lineHeight: 30,
     color: colors.textMuted,
-    fontWeight: font.medium,
+    
     marginTop: spacing.xl,
     ...rtlText,
   },
@@ -163,5 +163,5 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.sm,
   },
-  tip: { fontSize: 14, color: colors.text, fontWeight: font.medium, lineHeight: 26, ...rtlText },
+  tip: { fontSize: 14, color: colors.text,  lineHeight: 26, ...rtlText },
 });

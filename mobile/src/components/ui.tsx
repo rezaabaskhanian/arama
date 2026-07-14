@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   btnLabel: {
     color: colors.onPrimary,
     fontSize: 16,
-    fontWeight: font.black,
+    // 
     ...rtlText,
   },
   iconTile: {
@@ -132,14 +132,14 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontSize: 22,
-    fontWeight: font.black,
+    // 
     ...rtlText,
   },
   body: {
     color: colors.textMuted,
     fontSize: 14,
     lineHeight: 24,
-    fontWeight: font.medium,
+    // 
     ...rtlText,
   },
 });

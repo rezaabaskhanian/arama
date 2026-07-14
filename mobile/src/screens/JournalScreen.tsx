@@ -1,25 +1,77 @@
 /**
- * Journal tab — a gentle prompt card plus a list of past entries. Tapping an
- * entry (or the prompt) opens the detail page.
+ * Journal tab — a gentle prompt + inline composer that writes to the API
+ * (createJournalEntry), and a list of past entries loaded from the backend
+ * (getJournalEntries). Mirrors the web dictionary/journal flow.
  */
-import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, font, gradients, rtlText, spacing } from '../theme';
+import { colors, font, gradients, radius, rtlText, spacing } from '../theme';
 import { Screen } from '../components/Screen';
-import { Card, GradientButton, IconTile, PressableScale } from '../components/ui';
+import { Card, GradientButton, IconTile } from '../components/ui';
 import { BookIcon } from '../icons';
-import { useNavigation } from '../navigation/NavigationContext';
+import { createJournalEntry, getJournalEntries, JournalEntry } from '../lib/api';
 
-const entries = [
-  { key: 'j1', date: 'امروز · ۱۰:۳۰', title: 'یک لحظه‌ی آرام', excerpt: 'صبح کنار پنجره نشستم و فقط نفس کشیدم…' },
-  { key: 'j2', date: 'دیروز · ۲۱:۱۵', title: 'چیزی که ممنونش بودم', excerpt: 'تماس یک دوست قدیمی حالم را بهتر کرد.' },
-  { key: 'j3', date: 'دوشنبه · ۰۸:۴۵', title: 'قدم کوچک', excerpt: 'امروز تمرین تنفس را تا آخر انجام دادم.' },
-];
+const MOOD_EMOJI = ['😣', '😔', '😐', '🙂', '😊', '😄'];
+
+function normalize(data: any): JournalEntry[] {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.entries)) return data.entries;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.journals)) return data.journals;
+  return [];
+}
+
+function formatDate(iso?: string): string {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('fa-IR', {
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return '';
+  }
+}
 
 export const JournalScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const { push } = useNavigation();
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
+    try {
+      const data = await getJournalEntries(1, 20);
+      setEntries(normalize(data));
+    } catch {
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const submit = async () => {
+    if (!text.trim() || saving) return;
+    setSaving(true);
+    try {
+      await createJournalEntry(text.trim(), 3);
+      setText('');
+      await load();
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <Screen padForTabBar contentStyle={{ paddingTop: insets.top + spacing.md }}>
@@ -31,50 +83,76 @@ export const JournalScreen: React.FC = () => {
           <BookIcon size={24} color={colors.white} />
         </IconTile>
         <Text style={styles.promptTitle}>پرسش امروز</Text>
-        <Text style={styles.promptText}>
-          امروز چه چیز کوچکی به تو حس امنیت داد؟
-        </Text>
+        <Text style={styles.promptText}>امروز چه چیز کوچکی به تو حس امنیت داد؟</Text>
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          placeholder="اینجا بنویس…"
+          placeholderTextColor={colors.textFaint}
+          multiline
+          style={styles.input}
+        />
         <GradientButton
-          label="نوشتن"
+          label={saving ? 'در حال ثبت...' : 'ثبت نوشته'}
           colors={gradients.amber}
-          onPress={() => push('detail', { key: 'journal', title: 'نوشته‌ی جدید' })}
+          onPress={submit}
           style={{ marginTop: spacing.md }}
         />
       </Card>
 
       <Text style={styles.section}>نوشته‌های پیشین</Text>
 
-      {entries.map(e => (
-        <PressableScale key={e.key} onPress={() => push('detail', { key: 'journal', title: e.title })}>
-          <Card style={styles.entry}>
-            <Text style={styles.entryDate}>{e.date}</Text>
-            <Text style={styles.entryTitle}>{e.title}</Text>
-            <Text style={styles.entryExcerpt} numberOfLines={1}>
-              {e.excerpt}
+      {loading ? (
+        <ActivityIndicator color={colors.primary} style={{ marginVertical: spacing.xl }} />
+      ) : entries.length === 0 ? (
+        <Card style={styles.empty}>
+          <Text style={styles.emptyText}>هنوز نوشته‌ای ثبت نکرده‌ای. اولین نوشته‌ات را بنویس 🌿</Text>
+        </Card>
+      ) : (
+        entries.map((e, i) => (
+          <Card key={e.id || i} style={styles.entry}>
+            <View style={styles.entryHead}>
+              {typeof e.mood === 'number' ? (
+                <Text style={styles.entryMood}>{MOOD_EMOJI[e.mood] || '🙂'}</Text>
+              ) : null}
+              <Text style={styles.entryDate}>{formatDate(e.created_at)}</Text>
+            </View>
+            <Text style={styles.entryContent} numberOfLines={3}>
+              {e.content}
             </Text>
           </Card>
-        </PressableScale>
-      ))}
+        ))
+      )}
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
-  h1: { fontSize: 26, fontWeight: font.black, color: colors.text, ...rtlText },
-  p: { fontSize: 14, color: colors.textMuted, fontWeight: font.medium, marginTop: 4, marginBottom: spacing.lg, ...rtlText },
+  h1: { fontSize: 26,  color: colors.text, ...rtlText },
+  p: { fontSize: 14, color: colors.textMuted,  marginTop: 4, marginBottom: spacing.lg, ...rtlText },
   prompt: { gap: spacing.sm },
-  promptTitle: { fontSize: 13, color: colors.warning, fontWeight: font.black, marginTop: spacing.sm, ...rtlText },
-  promptText: { fontSize: 17, color: colors.text, fontWeight: font.bold, lineHeight: 28, ...rtlText },
-  section: {
-    fontSize: 16,
-    fontWeight: font.black,
+  promptTitle: { fontSize: 13, color: colors.warning,  marginTop: spacing.sm, ...rtlText },
+  promptText: { fontSize: 17, color: colors.text,  lineHeight: 28, ...rtlText },
+  input: {
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    minHeight: 90,
+    fontSize: 14.5,
     color: colors.text,
-    marginTop: spacing.xl,
-    marginBottom: spacing.md,
+    
+    textAlignVertical: 'top',
+    marginTop: spacing.sm,
     ...rtlText,
   },
-  entry: { marginBottom: spacing.md, gap: 4 },
-  entryDate: { fontSize: 11.5, color: colors.textFaint, fontWeight: font.medium, ...rtlText },
-  entryTitle: { fontSize: 16, color: colors.text, fontWeight: font.black, ...rtlText },
-  entryExcerpt: { fontSize: 13, color: colors.textMuted, fontWeight: font.medium, ...rtlText },
+  section: { fontSize: 16,  color: colors.text, marginTop: spacing.xl, marginBottom: spacing.md, ...rtlText },
+  empty: { alignItems: 'center', paddingVertical: spacing.xl },
+  emptyText: { fontFamily: font.family, fontSize: 13.5, color: colors.textMuted, textAlign: 'center', lineHeight: 24, ...{ writingDirection: 'rtl' as const } },
+  entry: { marginBottom: spacing.md, gap: spacing.sm },
+  entryHead: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.sm },
+  entryMood: { fontSize: 18 },
+  entryDate: { fontSize: 11.5, color: colors.textFaint,  ...rtlText },
+  entryContent: { fontSize: 14, color: colors.text,  lineHeight: 24, ...rtlText },
 });

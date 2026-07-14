@@ -8,7 +8,7 @@
  */
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-export type TabKey = 'exercises' | 'journal' | 'home' | 'mood' | 'profile';
+export type TabKey = 'exercises' | 'journal' | 'home' | 'mood' | 'progress';
 export type Phase = 'splash' | 'onboarding' | 'app';
 
 export type StackEntry = { id: number; name: string; params?: Record<string, unknown> };

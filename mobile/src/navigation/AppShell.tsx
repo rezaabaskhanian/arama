@@ -14,8 +14,15 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { ExercisesScreen } from '../screens/ExercisesScreen';
 import { JournalScreen } from '../screens/JournalScreen';
 import { MoodScreen } from '../screens/MoodScreen';
+import { ProgressScreen } from '../screens/ProgressScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { DetailScreen } from '../screens/DetailScreen';
+import { ExerciseDetailScreen } from '../screens/ExerciseDetailScreen';
+import { GuideScreen } from '../screens/GuideScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
+import { AssessmentScreen } from '../screens/AssessmentScreen';
+import { MessagesScreen } from '../screens/MessagesScreen';
+import { InAppBanner } from '../components/InAppBanner';
 
 const { width } = Dimensions.get('window');
 
@@ -24,7 +31,27 @@ const tabScreens: Record<TabKey, React.FC> = {
   exercises: ExercisesScreen,
   journal: JournalScreen,
   mood: MoodScreen,
-  profile: ProfileScreen,
+  progress: ProgressScreen,
+};
+
+/** Route a pushed stack entry to its screen by name. */
+const renderStackScreen = (entry: StackEntry): React.ReactNode => {
+  switch (entry.name) {
+    case 'exercise':
+      return <ExerciseDetailScreen params={entry.params} />;
+    case 'profile':
+      return <ProfileScreen />;
+    case 'guide':
+      return <GuideScreen />;
+    case 'settings':
+      return <SettingsScreen />;
+    case 'assessment':
+      return <AssessmentScreen />;
+    case 'messages':
+      return <MessagesScreen />;
+    default:
+      return <DetailScreen params={entry.params} />;
+  }
 };
 
 export const AppShell: React.FC = () => {
@@ -35,6 +62,7 @@ export const AppShell: React.FC = () => {
       <TabHost tab={tab} />
       <StackHost stack={stack} />
       <TabBar />
+      <InAppBanner />
     </View>
   );
 };
@@ -146,8 +174,7 @@ const StackPage: React.FC<{
         styles.page,
         { zIndex: elevation, transform: [{ translateX }] },
       ]}>
-      {/* Only detail pages exist so far; route on entry.name to add more. */}
-      <DetailScreen params={entry.params} />
+      {renderStackScreen(entry)}
     </Animated.View>
   );
 };

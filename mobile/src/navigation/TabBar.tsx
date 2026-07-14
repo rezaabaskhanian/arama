@@ -16,7 +16,7 @@ import {
   HomeIcon,
   IconProps,
   SparklesIcon,
-  UserIcon,
+  TrendingUpIcon,
 } from '../icons';
 import { TabKey, useNavigation } from './NavigationContext';
 
@@ -33,7 +33,7 @@ const TABS: TabDef[] = [
   { key: 'journal', label: 'ژورنال', Icon: BookIcon },
   { key: 'home', label: 'خانه', Icon: HomeIcon, center: true },
   { key: 'mood', label: 'حال من', Icon: ActivityIcon },
-  { key: 'profile', label: 'پروفایل', Icon: UserIcon },
+  { key: 'progress', label: 'روند بهبود', Icon: TrendingUpIcon },
 ];
 
 export const TabBar: React.FC = () => {
@@ -70,7 +70,9 @@ const SideTab: React.FC<{ def: TabDef; active: boolean; onPress: () => void }> =
     <PressableScale onPress={onPress} style={styles.side} scaleTo={0.85}>
       <View style={styles.sideInner}>
         <Icon size={24} color={active ? colors.primary : colors.textFaint} strokeWidth={active ? 2.4 : 2} />
-        <Text style={[styles.sideLabel, active && styles.sideLabelActive]}>{label}</Text>
+        <Text style={[styles.sideLabel, active && styles.sideLabelActive]} numberOfLines={1}>
+          {label}
+        </Text>
         <Animated.View
           style={[
             styles.dot,
@@ -115,7 +117,8 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row-reverse',
     alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: spacing.xs,
     backgroundColor: 'rgba(255,255,255,0.96)',
     borderRadius: radius.xl,
     borderWidth: 1,
@@ -126,10 +129,10 @@ const styles = StyleSheet.create({
     width: '100%',
     ...shadow.floating,
   },
-  side: { flex: 1 },
+  side: { width: 62 },
   sideInner: { alignItems: 'center', gap: 4, paddingVertical: 2 },
-  sideLabel: { fontSize: 11, color: colors.textFaint, fontWeight: font.semibold },
-  sideLabelActive: { color: colors.primary, fontWeight: font.black },
+  sideLabel: { fontFamily: font.family, fontSize: 11, color: colors.textFaint },
+  sideLabelActive: { color: colors.primary },
   dot: {
     width: 5,
     height: 5,
@@ -137,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     marginTop: 1,
   },
-  centerSlot: { flex: 1, alignItems: 'center' },
+  centerSlot: { width: 68, alignItems: 'center' },
   centerBtn: {
     width: 62,
     height: 62,
@@ -150,5 +153,5 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...shadow.floating,
   },
-  centerLabel: { fontSize: 11, color: colors.textFaint, fontWeight: font.semibold, marginTop: 4 },
+  centerLabel: { fontFamily: font.family, fontSize: 11, color: colors.textFaint, marginTop: 4 },
 });

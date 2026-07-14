@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   title: {
     color: colors.white,
     fontSize: 28,
-    fontWeight: font.black,
+    
     marginBottom: spacing.md,
     ...rtlText,
   },
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.9)',
     fontSize: 16,
     lineHeight: 30,
-    fontWeight: font.medium,
+    
     ...rtlText,
   },
   controls: {
@@ -182,10 +182,10 @@ const styles = StyleSheet.create({
   dotIdle: { width: 8, backgroundColor: 'rgba(255,255,255,0.45)' },
   cta: { width: '100%' },
   skip: {
+    fontFamily: font.family,
     textAlign: 'center',
     color: 'rgba(255,255,255,0.85)',
     fontSize: 14,
-    fontWeight: font.bold,
     paddingVertical: spacing.sm,
   },
 });
