@@ -96,6 +96,14 @@ body {
   box-shadow: var(--shadow-card);
 }
 
+/* سطح توپُر نوار بالا و پایین — رنگ سفید یک‌دست به‌جای شیشه‌ی محو، برای جان‌بخشیدن به نوارها */
+.nav-solid {
+  background-color: #ffffff;
+  border: 1px solid var(--color-brand-100);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 34px -14px rgba(74, 54, 123, 0.28);
+}
+
 /* گرادیان اصلی برند برای دکمه‌ها و سطوح شاخص */
 .bg-brand-gradient {
   background-image: linear-gradient(to right, #7e66c6, #6a50b4, #47367b);

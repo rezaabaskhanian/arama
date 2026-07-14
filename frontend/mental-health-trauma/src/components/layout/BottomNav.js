@@ -18,8 +18,8 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 px-4 pb-4 pt-2 pointer-events-none" dir="rtl">
-      <div className="max-w-md mx-auto glass-card rounded-[1.75rem]! flex justify-around items-center px-2 py-2 pointer-events-auto">
+    <nav className="fixed bottom-0 inset-x-0 z-50 px-5 pb-5 pt-2 pointer-events-none" dir="rtl">
+      <div className="max-w-md mx-auto nav-solid rounded-[2rem]! flex justify-around items-center px-2 py-2 pointer-events-auto">
         {items.map(({ title, href, icon: Icon }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
           return (

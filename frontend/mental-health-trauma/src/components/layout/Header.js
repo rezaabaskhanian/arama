@@ -19,7 +19,7 @@ export default function Header({ title, subtitle, back = false, right }) {
       animate={{ y: 0, opacity: 1 }}
       className="sticky top-0 z-40 px-4 pt-4 pb-2"
     >
-      <div className="max-w-3xl mx-auto glass-card rounded-[2rem]! p-4 flex justify-between items-center">
+      <div className="max-w-3xl mx-auto nav-solid rounded-[2rem]! p-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           {back && (
             <button

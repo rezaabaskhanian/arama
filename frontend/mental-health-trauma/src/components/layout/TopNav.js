@@ -43,11 +43,9 @@ export default function TopNav() {
   return (
     <nav
       dir="rtl"
-      className={`z-50 transition-all duration-300 ${onHero ? 'fixed top-0 inset-x-0' : 'sticky top-0'} ${
-        transparent ? 'bg-transparent' : 'bg-white/75 backdrop-blur-xl border-b border-white/40 shadow-sm'
-      }`}
+      className={`z-50 transition-all duration-300 px-4 pt-4 pb-2 ${onHero ? 'fixed top-0 inset-x-0' : 'sticky top-0'}`}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 h-20 flex items-center justify-between gap-6">
+      <div className="max-w-7xl mx-auto nav-solid rounded-[2rem]! px-5 sm:px-8 h-16 flex items-center justify-between gap-6">
         {/* برند — فقط متن */}
         <Link
           href="/"
