@@ -1,6 +1,7 @@
 package supervisionhandler
 
 import (
+	domainuser "aramina/internal/domain/user"
 	"aramina/internal/pkg/claims"
 	"aramina/internal/pkg/richerror"
 	"context"
@@ -16,7 +17,7 @@ func (h Handler) staffOnly(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return c.JSON(http.StatusUnauthorized, map[string]string{"message": "احراز هویت ناموفق"})
 		}
-		if cl.Role != "admin" && cl.Role != "therapist" {
+		if cl.Role != domainuser.RoleAdmin && cl.Role != domainuser.RoleTherapist {
 			return c.JSON(http.StatusForbidden, map[string]string{"message": "دسترسی فقط برای روانشناس یا ادمین"})
 		}
 		return next(c)

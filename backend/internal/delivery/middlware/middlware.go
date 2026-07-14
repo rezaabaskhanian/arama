@@ -3,6 +3,7 @@ package middlware
 import (
 	"net/http"
 
+	domainuser "aramina/internal/domain/user"
 	"aramina/internal/pkg/claims"
 	"aramina/internal/pkg/richerror"
 	authservice "aramina/internal/service/auth"
@@ -53,7 +54,7 @@ func AdminOnly(next echo.HandlerFunc) echo.HandlerFunc {
 			})
 		}
 
-		if userClaims.Role != "admin" {
+		if userClaims.Role != domainuser.RoleAdmin {
 			return c.JSON(http.StatusForbidden, map[string]string{
 				"message": "دسترسی غیرمجاز. فقط ادمین‌ها می‌توانند وارد این بخش شوند.",
 			})

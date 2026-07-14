@@ -1,6 +1,7 @@
 package adminhandler
 
 import (
+	domainuser "aramina/internal/domain/user"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,7 +21,7 @@ func (h Handler) UpdateUserRole(c echo.Context) error {
 		})
 	}
 
-	if req.Role != "user" && req.Role != "admin" && req.Role != "helper" {
+	if !domainuser.ValidRole(req.Role) {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"message": "نقش نامعتبر است",
 		})
