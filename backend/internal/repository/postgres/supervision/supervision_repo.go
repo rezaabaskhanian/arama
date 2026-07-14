@@ -18,6 +18,27 @@ func (d DB) SetWantsSupervision(ctx context.Context, userID string, wants bool) 
 	return nil
 }
 
+// ListStaffIDs شناسه‌ی همه‌ی روانشناس‌ها و ادمین‌ها را برمی‌گرداند (برای نوتیف پیام ورودی کاربر)
+func (d DB) ListStaffIDs(ctx context.Context) ([]string, error) {
+	const op = "postgressupervision.ListStaffIDs"
+
+	rows, err := d.conn.Query(ctx, `SELECT id::text FROM users WHERE role IN ('admin', 'therapist')`)
+	if err != nil {
+		return nil, richerror.New(op).WithErr(err)
+	}
+	defer rows.Close()
+
+	var out []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, richerror.New(op).WithErr(err)
+		}
+		out = append(out, id)
+	}
+	return out, nil
+}
+
 // GetWantsSupervision وضعیت درخواست نظارت کاربر را می‌خواند
 func (d DB) GetWantsSupervision(ctx context.Context, userID string) (bool, error) {
 	const op = "postgressupervision.GetWantsSupervision"

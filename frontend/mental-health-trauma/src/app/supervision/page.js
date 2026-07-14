@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldCheck, Loader2, Bot, Stethoscope } from 'lucide-react';
-import { getSupervisionStatus, toggleSupervision } from '@/lib/api';
+import { ShieldCheck, Loader2, Bot, Stethoscope, Send } from 'lucide-react';
+import { getSupervisionStatus, toggleSupervision, sendSupervisionMessage } from '@/lib/api';
 
 const DOCTOR = {
   name: 'دکتر مریم احمدی',
@@ -27,6 +27,8 @@ export default function SupervisionPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -54,6 +56,28 @@ export default function SupervisionPage() {
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSend = async (e) => {
+    e?.preventDefault();
+    const body = draft.trim();
+    if (!body || sending) return;
+    try {
+      setSending(true);
+      setError('');
+      await sendSupervisionMessage(body);
+      // نمایش خوش‌بینانه‌ی پیام ارسالی + روشن‌شدن دسترسی (بک‌اند هم خودکار روشن می‌کند)
+      setMessages((prev) => [
+        ...prev,
+        { id: `local-${Date.now()}`, body, from_user: true, is_auto: false, sender_name: 'شما', created_at: new Date().toISOString() },
+      ]);
+      setWants(true);
+      setDraft('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -104,15 +128,23 @@ export default function SupervisionPage() {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="flex gap-3"
+                      className={`flex gap-3 ${m.from_user ? 'flex-row-reverse' : ''}`}
                     >
-                      <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${m.is_auto ? 'bg-brand-100 text-brand-600' : 'bg-brand-900 text-white font-black'}`}>
-                        {m.is_auto ? <Bot className="w-5 h-5" /> : 'م'}
+                      <span
+                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-black ${
+                          m.from_user ? 'bg-brand-600 text-white' : m.is_auto ? 'bg-brand-100 text-brand-600' : 'bg-brand-900 text-white'
+                        }`}
+                      >
+                        {m.from_user ? 'ش' : m.is_auto ? <Bot className="w-5 h-5" /> : 'م'}
                       </span>
-                      <div className={`rounded-[1.5rem] rounded-tr-md p-5 max-w-xl ${m.is_auto ? 'bg-brand-50' : 'bg-slate-50'}`}>
-                        <p className="text-slate-700 leading-relaxed font-medium text-sm whitespace-pre-wrap">{m.body}</p>
-                        <p className="text-[11px] font-bold text-slate-400 mt-3">
-                          {m.sender_name || DOCTOR.name} · {formatDate(m.created_at)}
+                      <div
+                        className={`rounded-[1.5rem] p-5 max-w-xl ${
+                          m.from_user ? 'bg-brand-600 text-white rounded-tl-md' : m.is_auto ? 'bg-brand-50 rounded-tr-md' : 'bg-slate-50 rounded-tr-md'
+                        }`}
+                      >
+                        <p className={`leading-relaxed font-medium text-sm whitespace-pre-wrap ${m.from_user ? 'text-white' : 'text-slate-700'}`}>{m.body}</p>
+                        <p className={`text-[11px] font-bold mt-3 ${m.from_user ? 'text-brand-100' : 'text-slate-400'}`}>
+                          {m.from_user ? 'شما' : m.sender_name || DOCTOR.name} · {formatDate(m.created_at)}
                           {m.is_auto && ' · پیام خودکار آرامینا'}
                         </p>
                       </div>
@@ -127,6 +159,31 @@ export default function SupervisionPage() {
                 )}
               </div>
             )}
+
+            {/* کادر نوشتن پیام برای روانشناس */}
+            <form onSubmit={handleSend} className="pt-5 border-t border-slate-100 flex items-end gap-3">
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend(e);
+                  }
+                }}
+                rows={1}
+                placeholder="پیامت را برای همراهت بنویس…"
+                className="flex-1 resize-none rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-brand-300 focus:bg-white transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={sending || !draft.trim()}
+                aria-label="ارسال پیام"
+                className="w-12 h-12 shrink-0 rounded-2xl bg-brand-600 text-white flex items-center justify-center hover:bg-brand-700 transition-colors disabled:opacity-50"
+              >
+                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              </button>
+            </form>
           </section>
 
           {/* پنل کناری */}

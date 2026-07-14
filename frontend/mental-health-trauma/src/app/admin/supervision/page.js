@@ -194,10 +194,20 @@ export default function AdminSupervisionPage() {
                   <p className="text-center text-slate-400 text-sm font-bold py-8">هنوز پیامی برای این کاربر فرستاده نشده.</p>
                 ) : (
                   messages.map((m) => (
-                    <div key={m.id} className={`rounded-2xl p-4 ${m.is_auto ? 'bg-teal-50 border border-teal-100' : 'bg-violet-50 border border-violet-100'}`}>
+                    <div
+                      key={m.id}
+                      className={`rounded-2xl p-4 ${
+                        m.from_user
+                          ? 'bg-amber-50 border border-amber-200'
+                          : m.is_auto
+                          ? 'bg-teal-50 border border-teal-100'
+                          : 'bg-violet-50 border border-violet-100'
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-1.5 text-[11px] font-black text-slate-500">
                         {m.is_auto ? <Bot className="w-3.5 h-3.5" /> : <UserRound className="w-3.5 h-3.5" />}
                         <span>{m.sender_name}</span>
+                        {m.from_user && <span className="bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">مراجع</span>}
                         <span className="text-slate-300">•</span>
                         <span className="font-bold text-slate-400">{formatDate(m.created_at)}</span>
                       </div>

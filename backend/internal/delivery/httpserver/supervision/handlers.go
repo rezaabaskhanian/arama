@@ -68,6 +68,24 @@ func (h Handler) MyMessages(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func (h Handler) SendMyMessage(c echo.Context) error {
+	const op = "supervisionhandler.SendMyMessage"
+	cl, err := claims.GetClaims(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"message": "احراز هویت ناموفق"})
+	}
+	var req struct {
+		Body string `json:"body"`
+	}
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "مشکل در دریافت ورودی"})
+	}
+	if err := h.supervisionSvc.SendUserMessage(context.Background(), cl.UserID, req.Body); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": richerror.New(op).WithErr(err).Message()})
+	}
+	return c.JSON(http.StatusOK, map[string]bool{"success": true})
+}
+
 func (h Handler) ListSupervised(c echo.Context) error {
 	const op = "supervisionhandler.ListSupervised"
 	res, err := h.supervisionSvc.ListSupervised(context.Background())

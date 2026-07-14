@@ -174,6 +174,13 @@ export const HeartHandshakeIcon: React.FC<IconProps> = p => (
   </Base>
 );
 
+export const SendIcon: React.FC<IconProps> = p => (
+  <Base {...p}>
+    <Path d="M22 2 11 13" />
+    <Path d="M22 2 15 22l-4-9-9-4 20-7z" />
+  </Base>
+);
+
 export const ClipboardIcon: React.FC<IconProps> = p => (
   <Base {...p}>
     <Path d="M9 4h6v3H9z" />

@@ -14,6 +14,7 @@ func (h Handler) SetSupervisionRoutes(e *echo.Echo) {
 	g.GET("/status", h.GetStatus, middlware.Auth(h.authSvc, h.authConfig))
 	g.POST("/toggle", h.Toggle, middlware.Auth(h.authSvc, h.authConfig))
 	g.GET("/messages", h.MyMessages, middlware.Auth(h.authSvc, h.authConfig))
+	g.POST("/messages", h.SendMyMessage, middlware.Auth(h.authSvc, h.authConfig))
 
 	// روانشناس / ادمین
 	staff := e.Group("/admin/supervision")

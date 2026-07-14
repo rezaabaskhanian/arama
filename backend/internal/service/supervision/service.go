@@ -13,6 +13,7 @@ type Repository interface {
 	ListMessagesForUser(ctx context.Context, userID string) ([]domain.Message, error)
 	ListSupervisedUsers(ctx context.Context) ([]domain.SupervisedUser, error)
 	ListSupervisedUsersWithoutMessageOn(ctx context.Context, date time.Time) ([]domain.SupervisedUser, error)
+	ListStaffIDs(ctx context.Context) ([]string, error)
 }
 
 // Notifier ارسال نوتیف push به کاربر (پیاده‌سازی: service/device.Service). ممکن است nil باشد.

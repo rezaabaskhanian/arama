@@ -636,6 +636,16 @@ export async function getSupervisionMessages() {
   }
 }
 
+// ارسال پیام از طرف خودِ کاربر برای روانشناس/همراه (چت دوطرفه)
+export async function sendSupervisionMessage(body) {
+  try {
+    const response = await apiClient.post('/supervision/messages', { body });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطا در ارسال پیام');
+  }
+}
+
 // --- سمت روانشناس/ادمین ---
 
 export async function adminGetSupervisedUsers() {

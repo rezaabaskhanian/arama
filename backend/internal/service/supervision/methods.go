@@ -8,6 +8,9 @@ import (
 )
 
 func toMessageDTO(m domain.Message) dto.MessageDTO {
+	// پیام از طرف خودِ کاربر است اگر فرستنده همان صاحب گفتگو باشد (و خودکار نباشد)
+	fromUser := !m.IsAuto && m.SenderID != "" && m.SenderID == m.UserID
+
 	senderName := m.SenderName
 	if m.IsAuto || m.SenderID == "" {
 		senderName = "سیستم آرامینا"
@@ -17,6 +20,7 @@ func toMessageDTO(m domain.Message) dto.MessageDTO {
 		Body:       m.Body,
 		SenderName: senderName,
 		IsAuto:     m.IsAuto,
+		FromUser:   fromUser,
 		CreatedAt:  m.CreatedAt,
 	}
 }
@@ -125,6 +129,49 @@ func (s Service) SendMessage(ctx context.Context, senderID, userID, body string,
 		}
 		go s.notifier.NotifyUser(context.Background(), userID, title, bodyText,
 			map[string]string{"type": msgType})
+	}
+
+	return nil
+}
+
+// SendUserMessage پیام خودِ کاربر برای روانشناس/همراهش را ثبت می‌کند (چت دوطرفه).
+// فرستنده و صاحب گفتگو هر دو خودِ کاربر است تا در toMessageDTO به‌عنوان from_user شناخته شود.
+func (s Service) SendUserMessage(ctx context.Context, userID, body string) error {
+	const op = "supervisionservice.SendUserMessage"
+
+	if len([]rune(body)) == 0 {
+		return richerror.New(op).WithMessage("متن پیام نمی‌تواند خالی باشد")
+	}
+
+	// نوشتن پیام برای روانشناس یعنی درخواست همراهی؛ اگر خاموش بود روشنش کن تا در پنل دیده شود
+	wants, err := s.repo.GetWantsSupervision(ctx, userID)
+	if err != nil {
+		return richerror.New(op).WithErr(err)
+	}
+	if !wants {
+		if err := s.repo.SetWantsSupervision(ctx, userID, true); err != nil {
+			return richerror.New(op).WithErr(err)
+		}
+	}
+
+	if err := s.repo.SaveMessage(ctx, userID, userID, body, false); err != nil {
+		return richerror.New(op).WithErr(err)
+	}
+
+	// به روانشناس‌ها/ادمین‌ها خبر بده که پیام تازه‌ای رسیده (best-effort)
+	if s.notifier != nil {
+		go func() {
+			staffIDs, err := s.repo.ListStaffIDs(context.Background())
+			if err != nil {
+				return
+			}
+			for _, sid := range staffIDs {
+				s.notifier.NotifyUser(context.Background(), sid,
+					"پیام تازه از یک مراجع 💬",
+					"یک مراجع برایت پیام گذاشته؛ برای خواندن پنل همراهی را باز کن.",
+					map[string]string{"type": "supervision_inbound"})
+			}
+		}()
 	}
 
 	return nil

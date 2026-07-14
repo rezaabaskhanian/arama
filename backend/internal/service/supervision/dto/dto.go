@@ -7,6 +7,7 @@ type MessageDTO struct {
 	Body       string    `json:"body"`
 	SenderName string    `json:"sender_name"`
 	IsAuto     bool      `json:"is_auto"`
+	FromUser   bool      `json:"from_user"` // true یعنی خودِ کاربر این پیام را فرستاده (نه روانشناس/سیستم)
 	CreatedAt  time.Time `json:"created_at"`
 }
 

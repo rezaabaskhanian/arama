@@ -273,6 +273,7 @@ export type SupervisionMessage = {
   body: string;
   sender_name: string;
   is_auto: boolean;
+  from_user: boolean; // true → the user themselves sent this (two-way chat)
   created_at: string;
 };
 
@@ -284,6 +285,11 @@ export async function getSupervisionMessages(): Promise<SupervisionMessage[]> {
   } catch {
     return [];
   }
+}
+
+/** Send a message from the current user to their therapist/companion (two-way chat). */
+export async function sendSupervisionMessage(body: string): Promise<void> {
+  await request<{ success: boolean }>('POST', 'supervision/messages', { body: { body } });
 }
 
 // ---------- Devices (push notifications) ----------
