@@ -82,9 +82,6 @@ export const OnboardingScreen: React.FC = () => {
                 styles.slideContent,
                 { paddingTop: insets.top + spacing.xxl, paddingBottom: 220 },
               ]}>
-              <View style={styles.emojiBadge}>
-                <Text style={styles.emoji}>{slide.emoji}</Text>
-              </View>
               <Text style={styles.title}>{slide.title}</Text>
               <Text style={styles.desc}>{slide.description}</Text>
             </View>
@@ -139,16 +136,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     justifyContent: 'flex-end',
   },
-  emojiBadge: {
-    width: 68,
-    height: 68,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.lg,
-  },
-  emoji: { fontSize: 34 },
   title: {
     color: colors.white,
     fontSize: 28,
