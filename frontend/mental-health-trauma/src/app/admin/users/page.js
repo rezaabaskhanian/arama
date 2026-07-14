@@ -66,9 +66,9 @@ export default function AdminUsersPage() {
           color: 'bg-red-50 text-red-600 border-red-100',
           icon: <Shield className="w-3 h-3" />
         };
-      case 'helper':
+      case 'therapist':
         return {
-          text: 'همیار',
+          text: 'روانشناس',
           color: 'bg-emerald-50 text-emerald-600 border-emerald-100',
           icon: <UserCheck className="w-3 h-3" />
         };
@@ -195,7 +195,7 @@ export default function AdminUsersPage() {
                               className="appearance-none bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-4 focus:ring-violet-500/5 focus:border-violet-200 transition-all cursor-pointer pr-8"
                             >
                               <option value="user">کاربر عادی</option>
-                              <option value="helper">همیار</option>
+                              <option value="therapist">روانشناس</option>
                               <option value="admin">مدیر کل</option>
                             </select>
                             <UserCog className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
