@@ -50,6 +50,14 @@ func (s Service) RunDailyFallback(ctx context.Context) (int, error) {
 			continue
 		}
 		sent++
+
+		// نوتیف push خودکار (best-effort)
+		if s.notifier != nil {
+			go s.notifier.NotifyUser(context.Background(), u.UserID,
+				"آرامینا کنارت است 🌿",
+				"یک پیام تازه برایت آماده است.",
+				map[string]string{"type": "supervision_auto"})
+		}
 	}
 
 	return sent, nil

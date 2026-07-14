@@ -7,6 +7,7 @@ import (
 	commitmenthandler "aramina/internal/delivery/httpserver/commitment"
 	crisishandler "aramina/internal/delivery/httpserver/crisis"
 	dashboardhandler "aramina/internal/delivery/httpserver/dashboard"
+	devicehandler "aramina/internal/delivery/httpserver/device"
 	exercisehandler "aramina/internal/delivery/httpserver/exersice"
 	journalhandler "aramina/internal/delivery/httpserver/journal"
 	sessionhandler "aramina/internal/delivery/httpserver/session"
@@ -18,6 +19,7 @@ import (
 	commitmentservice "aramina/internal/service/commitment"
 	crisisservice "aramina/internal/service/crisis"
 	dashboardservice "aramina/internal/service/dashboard"
+	deviceservice "aramina/internal/service/device"
 	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
 	sessionservice "aramina/internal/service/session"
@@ -51,13 +53,16 @@ type Service struct {
 	commitmentHandler commitmenthandler.Handler
 
 	supervisionHandler supervisionhandler.Handler
+
+	deviceHandler devicehandler.Handler
 }
 
 func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Service, authConfig authservice.Config,
 	crisisSvc crisisservice.Service, sessionSvc sessionservice.Service, journalSvc journalservice.Service,
 	exersiceSvc exerciseservice.Service, assessmentSvc assessmentservice.Service,
 	dashboardSvc dashboardservice.Service, adminSvc adminservice.Service,
-	commitmentSvc commitmentservice.Service, supervisionSvc supervisionservice.Service) Service {
+	commitmentSvc commitmentservice.Service, supervisionSvc supervisionservice.Service,
+	deviceSvc deviceservice.Service) Service {
 
 	return Service{cfg: cfg, userHandler: userhandler.New(userSvc, authSvc, authConfig, cfg.Auth.SignKey),
 
@@ -79,6 +84,8 @@ func New(cfg config.Config, userSvc userservice.Service, authSvc authservice.Ser
 		commitmentHandler: commitmenthandler.New(commitmentSvc, authSvc, authConfig),
 
 		supervisionHandler: supervisionhandler.New(supervisionSvc, authSvc, authConfig),
+
+		deviceHandler: devicehandler.New(deviceSvc, authSvc, authConfig),
 	}
 }
 
@@ -144,6 +151,8 @@ func (s Service) Server() {
 	s.commitmentHandler.SetCommitmentRoutes(e)
 
 	s.supervisionHandler.SetSupervisionRoutes(e)
+
+	s.deviceHandler.SetDeviceRoutes(e)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", s.cfg.HttpServer.Port)))
 

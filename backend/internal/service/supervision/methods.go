@@ -90,8 +90,9 @@ func (s Service) MessagesForUser(ctx context.Context, userID string) (dto.Messag
 	return dto.MessagesResponse{Messages: out}, nil
 }
 
-// SendMessage روانشناس/ادمین برای کاربر پیام می‌فرستد
-func (s Service) SendMessage(ctx context.Context, senderID, userID, body string) error {
+// SendMessage روانشناس/ادمین برای کاربر پیام می‌فرستد. urgent=true یعنی پیام فوری
+// که push آن از کانال crisis (عبور از حالت سکوت) می‌رود.
+func (s Service) SendMessage(ctx context.Context, senderID, userID, body string, urgent bool) error {
 	const op = "supervisionservice.SendMessage"
 
 	if len([]rune(body)) == 0 {
@@ -110,5 +111,21 @@ func (s Service) SendMessage(ctx context.Context, senderID, userID, body string)
 	if err := s.repo.SaveMessage(ctx, userID, senderID, body, false); err != nil {
 		return richerror.New(op).WithErr(err)
 	}
+
+	// نوتیف push (best-effort، غیرمسدودکننده). متن عمومی است تا محتوای حساس روی
+	// صفحه‌ی قفل لو نرود؛ متن کامل داخل اپ دیده می‌شود.
+	if s.notifier != nil {
+		title := "پیام تازه از همراهت 💬"
+		bodyText := "یک پیام جدید برایت آمده؛ برای خواندن، آرامینا را باز کن."
+		msgType := "supervision_message"
+		if urgent {
+			title = "🚨 پیام فوری از همراهت"
+			bodyText = "یک پیام فوری داری — لطفاً همین حالا آرامینا را باز کن."
+			msgType = "crisis"
+		}
+		go s.notifier.NotifyUser(context.Background(), userID, title, bodyText,
+			map[string]string{"type": msgType})
+	}
+
 	return nil
 }

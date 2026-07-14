@@ -94,12 +94,13 @@ func (h Handler) SendMessage(c echo.Context) error {
 	}
 	userID := c.Param("id")
 	var req struct {
-		Body string `json:"body"`
+		Body   string `json:"body"`
+		Urgent bool   `json:"urgent"`
 	}
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "مشکل در دریافت ورودی"})
 	}
-	if err := h.supervisionSvc.SendMessage(context.Background(), cl.UserID, userID, req.Body); err != nil {
+	if err := h.supervisionSvc.SendMessage(context.Background(), cl.UserID, userID, req.Body, req.Urgent); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"message": richerror.New(op).WithErr(err).Message()})
 	}
 	return c.JSON(http.StatusOK, map[string]bool{"success": true})

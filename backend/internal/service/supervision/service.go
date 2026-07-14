@@ -15,10 +15,16 @@ type Repository interface {
 	ListSupervisedUsersWithoutMessageOn(ctx context.Context, date time.Time) ([]domain.SupervisedUser, error)
 }
 
-type Service struct {
-	repo Repository
+// Notifier ارسال نوتیف push به کاربر (پیاده‌سازی: service/device.Service). ممکن است nil باشد.
+type Notifier interface {
+	NotifyUser(ctx context.Context, userID, title, body string, data map[string]string)
 }
 
-func New(repo Repository) Service {
-	return Service{repo: repo}
+type Service struct {
+	repo     Repository
+	notifier Notifier
+}
+
+func New(repo Repository, notifier Notifier) Service {
+	return Service{repo: repo, notifier: notifier}
 }

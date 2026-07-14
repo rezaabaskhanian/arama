@@ -11,6 +11,7 @@ import (
 	postgresassessment "aramina/internal/repository/postgres/assessment"
 	postgrescommitment "aramina/internal/repository/postgres/commitment"
 	postgrescrisis "aramina/internal/repository/postgres/crisis"
+	postgresdevice "aramina/internal/repository/postgres/device"
 	postgresexercise "aramina/internal/repository/postgres/exercise"
 	postgresjournal "aramina/internal/repository/postgres/journal"
 	postgressession "aramina/internal/repository/postgres/session"
@@ -22,8 +23,10 @@ import (
 	commitmentservice "aramina/internal/service/commitment"
 	crisisservice "aramina/internal/service/crisis"
 	dashboardservice "aramina/internal/service/dashboard"
+	deviceservice "aramina/internal/service/device"
 	exerciseservice "aramina/internal/service/exercise"
 	journalservice "aramina/internal/service/journal"
+	pushservice "aramina/internal/service/push"
 	sessionservice "aramina/internal/service/session"
 	supervisionservice "aramina/internal/service/supervision"
 	userservice "aramina/internal/service/user"
@@ -57,14 +60,14 @@ func main() {
 
 	logger.L().Info("server is starting", "port", cfg.HttpServer.Port, "production", config.IsProduction())
 
-	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc := setupservice(cfg)
+	authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc, deviceSvc := setupservice(cfg)
 
 	// زمان‌بند پیام خودکار روانشناس: هر روز ساعت ۸ شبِ ایران، برای کاربرانِ تحت نظارتی
 	// که هنوز پیامی نگرفته‌اند، سیستم پیام دلگرم‌کننده می‌فرستد.
 	startSupervisionScheduler(supervisionSvc)
 
 	server := httpserver.New(cfg, userSvc, authSvc, cfg.Auth, crisisSvc, sessionSvc, journalSvc,
-		exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc)
+		exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc, deviceSvc)
 
 	server.Server()
 
@@ -98,7 +101,7 @@ func startSupervisionScheduler(svc supervisionservice.Service) {
 
 func setupservice(cfg config.Config) (authservice.Service, userservice.Service, crisisservice.Service, sessionservice.Service,
 	journalservice.Service, exerciseservice.Service, assessmentservice.Service, dashboardservice.Service, adminservice.Service,
-	commitmentservice.Service, supervisionservice.Service) {
+	commitmentservice.Service, supervisionservice.Service, deviceservice.Service) {
 
 	authSvc := authservice.New(cfg.Auth)
 
@@ -138,8 +141,20 @@ func setupservice(cfg config.Config) (authservice.Service, userservice.Service, 
 
 	commitmentSvc := commitmentservice.New(commitmentRepo, userSvc, appCache)
 
-	SupervisionRepo := postgressupervision.New(MyPostgresgresRepo.DB)
-	supervisionSvc := supervisionservice.New(SupervisionRepo)
+	// نوتیفیکیشن push: کلاینت FCM (اگر FCM_CREDENTIALS_FILE ست نباشد، push غیرفعال می‌ماند)
+	DeviceRepo := postgresdevice.New(MyPostgresgresRepo.DB)
+	fcm, err := pushservice.NewFCM(context.Background(), cfg.FCMCredentialsFile)
+	if err != nil {
+		logger.L().Error("fcm init failed; push disabled", "error", err.Error())
+	}
+	var pusher deviceservice.Pusher
+	if fcm != nil {
+		pusher = fcm
+	}
+	deviceSvc := deviceservice.New(DeviceRepo, pusher)
 
-	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc
+	SupervisionRepo := postgressupervision.New(MyPostgresgresRepo.DB)
+	supervisionSvc := supervisionservice.New(SupervisionRepo, deviceSvc)
+
+	return authSvc, userSvc, crisisSvc, sessionSvc, journalSvc, exerciseSvc, assessmentSvc, dashboardSvc, adminSvc, commitmentSvc, supervisionSvc, deviceSvc
 }

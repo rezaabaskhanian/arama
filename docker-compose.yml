@@ -45,8 +45,13 @@ services:
       JWT_SIGN_KEY: ${JWT_SIGN_KEY}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       MIGRATIONS_DIR: ./migrations
+      # کلید FCM داخل کانتینر (فایل زیر در volumes مونت می‌شود). خالی = push خاموش.
+      FCM_CREDENTIALS_FILE: /root/serviceAccountKey.json
     ports:
       - "8086:8086"
+    volumes:
+      # فایل کلید را قبل از up بگذار: backend/serviceAccountKey.json
+      - ./backend/serviceAccountKey.json:/root/serviceAccountKey.json:ro
 
   frontend:
     build:

@@ -1,0 +1,13 @@
+# --- Secrets: never commit Firebase / service-account keys ---
+serviceAccountKey.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+firebase-adminsdk-*.json
+.env
+.env.*
+
+# Go build artifacts
+/bin/
+*.exe
+*.test
+*.out

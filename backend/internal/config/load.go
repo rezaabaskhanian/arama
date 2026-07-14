@@ -33,6 +33,7 @@ func Load() Config {
 			Port:           getEnvInt("HTTP_PORT", 8086),
 			AllowedOrigins: getEnvList("ALLOWED_ORIGINS", []string{"http://localhost:3000", "http://localhost:3001"}),
 		},
+		FCMCredentialsFile: getEnv("FCM_CREDENTIALS_FILE", ""),
 	}
 }
 
