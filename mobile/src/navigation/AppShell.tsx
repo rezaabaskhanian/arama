@@ -22,6 +22,7 @@ import { GuideScreen } from '../screens/GuideScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { AssessmentScreen } from '../screens/AssessmentScreen';
 import { MessagesScreen } from '../screens/MessagesScreen';
+import { CommitmentsScreen } from '../screens/CommitmentsScreen';
 import { InAppBanner } from '../components/InAppBanner';
 
 const { width } = Dimensions.get('window');
@@ -49,6 +50,8 @@ const renderStackScreen = (entry: StackEntry): React.ReactNode => {
       return <AssessmentScreen />;
     case 'messages':
       return <MessagesScreen />;
+    case 'commitments':
+      return <CommitmentsScreen />;
     default:
       return <DetailScreen params={entry.params} />;
   }

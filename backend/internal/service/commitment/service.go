@@ -23,7 +23,7 @@ type Repository interface {
 
 // RequiredExercisesToUnlock حداقل تعداد تمرین شفابخشی که کاربر باید کامل کند
 // تا «تمرین‌های واقعی زندگی» برایش باز شود (اول کار درونی، بعد قدم در دنیای واقعی).
-const RequiredExercisesToUnlock = 3
+const RequiredExercisesToUnlock = 1
 
 type UserService interface {
 	GetUserByIDService(ID string) (domainuser.User, error)

@@ -290,6 +290,64 @@ export async function sendSupervisionMessage(body: string): Promise<void> {
   await request<{ success: boolean }>('POST', 'supervision/messages', { body: { body } });
 }
 
+// ---------- Commitments ----------
+export type CommitmentTemplate = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  icon: string;
+  duration_hint?: string;
+};
+
+export type CommitmentsTemplatesResponse = {
+  templates: CommitmentTemplate[];
+  unlocked: boolean;
+  completed_exercises: number;
+  required_exercises: number;
+};
+
+export type Commitment = {
+  id: string;
+  title: string;
+  category: string;
+  status: 'pledged' | 'completed' | 'cancelled';
+  mood_before?: number;
+  mood_after?: number;
+  mood_delta?: number;
+  reflection?: string;
+  created_at?: string;
+};
+
+export async function getCommitmentTemplates(): Promise<CommitmentsTemplatesResponse> {
+  return request<CommitmentsTemplatesResponse>('GET', 'commitments/templates');
+}
+
+export async function getMyCommitments(): Promise<Commitment[]> {
+  try {
+    const res = await request<{ commitments: Commitment[] }>('GET', 'commitments/mine');
+    return res?.commitments || [];
+  } catch {
+    return [];
+  }
+}
+
+export function pledgeCommitment(templateId: string, moodBefore: number) {
+  return request<{ success: boolean }>('POST', 'commitments/pledge', {
+    body: { template_id: templateId, mood_before: moodBefore || undefined },
+  });
+}
+
+export function completeCommitment(id: string, moodAfter: number, reflection: string) {
+  return request<{ success: boolean }>('POST', `commitments/${id}/complete`, {
+    body: { mood_after: moodAfter, reflection: reflection || undefined },
+  });
+}
+
+export function cancelCommitment(id: string) {
+  return request<{ success: boolean }>('DELETE', `commitments/${id}`);
+}
+
 // ---------- Devices (push notifications) ----------
 /** Register this device's FCM token so the backend can send push notifications. */
 export function registerDevice(token: string, platform = 'android') {

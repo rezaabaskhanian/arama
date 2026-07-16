@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, font, gradients, radius, rtlText, shadow, spacing } from '../theme';
 import { Screen } from '../components/Screen';
 import { Card, IconTile, PressableScale } from '../components/ui';
-import { ChevronLeftIcon, ClockIcon, HeartIcon, LockIcon, SearchIcon, SparklesIcon, WindIcon } from '../icons';
+import { ChevronLeftIcon, ClockIcon, HeartIcon, LockIcon, SearchIcon, SparklesIcon, TargetIcon, WindIcon } from '../icons';
 import { useNavigation } from '../navigation/NavigationContext';
 import {
   ExerciseItem,
@@ -83,6 +83,18 @@ export const ExercisesScreen: React.FC = () => {
     <Screen padForTabBar contentStyle={{ paddingTop: insets.top + spacing.md }}>
       <Text style={styles.h1}>تمرین‌های تو</Text>
       <Text style={styles.p}>هر روز یک قدم کوچک، به سمت آرامش.</Text>
+
+      {/* Commitments banner */}
+      <PressableScale onPress={() => push('commitments')} scaleTo={0.97}>
+        <View style={styles.commitBanner}>
+          <TargetIcon size={22} color={colors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.commitBannerTitle}>تمرین‌های واقعی زندگی</Text>
+            <Text style={styles.commitBannerSub}>قدم‌های کوچک، تغییرهای بزرگ</Text>
+          </View>
+          <ChevronLeftIcon size={18} color={colors.textFaint} />
+        </View>
+      </PressableScale>
 
       {/* Search */}
       <View style={styles.search}>
@@ -266,6 +278,20 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   emptyBtnText: { color: colors.white, fontSize: 14,  ...rtlText },
+  commitBanner: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    ...shadow.card,
+  },
+  commitBannerTitle: { fontSize: 14, color: colors.text, ...rtlText },
+  commitBannerSub: { fontSize: 12, color: colors.textMuted, marginTop: 2, ...rtlText },
   row: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md },
   rowLocked: { opacity: 0.7 },
   rowTitleWrap: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.sm },
