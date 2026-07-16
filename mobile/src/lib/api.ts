@@ -3,7 +3,6 @@
  * app's `src/lib/api.js`. Same endpoints, same response shapes. The bearer
  * token is read from `storage` on every request; a 401 clears the session.
  */
-import { Platform } from 'react-native';
 import { getItem, multiRemove, setItem, StorageKeys } from './storage';
 
 /**
@@ -11,8 +10,7 @@ import { getItem, multiRemove, setItem, StorageKeys } from './storage';
  * host; the Android emulator must use 10.0.2.2. Override via API_BASE if you run
  * on a device (point it at your machine's LAN IP).
  */
-export const API_BASE =
-  Platform.OS === 'android' ? 'http://10.0.2.2:8086' : 'http://localhost:8086';
+export const API_BASE = 'http://37.152.186.82:8086';
 
 let onUnauthorized: (() => void) | null = null;
 /** Let AuthContext hook in so a 401 anywhere can drop the user back to login. */
