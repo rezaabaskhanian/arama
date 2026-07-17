@@ -45,15 +45,30 @@ nano .env
 مقادیر مهم:
 - `DB_PASSWORD` → یک رمز قوی
 - `JWT_SIGN_KEY` → خروجی `openssl rand -hex 32`
-- `ALLOWED_ORIGINS` → آدرس عمومی فرانت (مثلاً `https://aramina.example.com`)
-- `NEXT_PUBLIC_API_URL` → آدرس عمومی API با اسلش پایانی (مثلاً `https://api.aramina.example.com/`)
-
-> اگر فعلاً دامنه ندارید و با IP تست می‌کنید:
-> `ALLOWED_ORIGINS=http://SERVER_IP:3000` و `NEXT_PUBLIC_API_URL=http://SERVER_IP:8086/`
+- `ALLOWED_ORIGINS` → `https://aramina.ir`
+- `NEXT_PUBLIC_API_URL` → `https://api.aramina.ir/`
 
 ---
 
-## ۳) بالا آوردن سرویس‌ها
+## ۳) آماده‌سازی Traefik (فقط بار اول)
+
+قبل از اولین `up`، فایل acme.json باید با مجوز درست وجود داشته باشد:
+
+```bash
+# اگر کلون تازه است این دستور را اجرا کنید
+touch traefik/acme.json
+chmod 600 traefik/acme.json
+```
+
+> **نکته:** پورت‌های ۸۰ و ۴۴۳ روی VPS باید باز باشند تا Let's Encrypt بتواند گواهی صادر کند.
+> ```bash
+> sudo ufw allow 80/tcp
+> sudo ufw allow 443/tcp
+> ```
+
+---
+
+## ۴) بالا آوردن سرویس‌ها
 
 ```bash
 docker compose up -d --build
@@ -61,46 +76,22 @@ docker compose up -d --build
 
 - بار اول build چند دقیقه طول می‌کشد.
 - بک‌اند در اولین اجرا migrationها را اجرا می‌کند (`RUN_MIGRATIONS=true`).
+- Traefik به‌طور خودکار از Let's Encrypt گواهی SSL می‌گیرد (چند ثانیه طول می‌کشد).
 
 بررسی وضعیت:
 ```bash
 docker compose ps
+docker compose logs -f traefik      # بررسی گرفتن گواهی SSL
 docker compose logs -f backend      # مشاهده‌ی لاگ‌ها
-curl http://localhost:8086/health   # باید {"status":"ok"} بدهد
+curl https://api.aramina.ir/health  # باید {"status":"ok"} بدهد
 ```
 
-سرویس‌ها:
-- فرانت: `http://SERVER_IP:3000`
-- API: `http://SERVER_IP:8086`
+سرویس‌ها (همه از طریق Traefik):
+- فرانت: `https://aramina.ir`
+- API: `https://api.aramina.ir`
+- HTTP به HTTPS redirect می‌شود (خودکار)
 
 ---
-
-## ۴) (توصیه‌شده) Nginx + دامنه + HTTPS
-
-برای production بهتر است backend و frontend پشت Nginx با SSL باشند.
-نمونه‌ی بلوک Nginx:
-
-```nginx
-# فرانت‌اند
-server {
-    server_name aramina.example.com;
-    location / { proxy_pass http://127.0.0.1:3000; proxy_set_header Host $host; }
-}
-# API
-server {
-    server_name api.aramina.example.com;
-    location / { proxy_pass http://127.0.0.1:8086; proxy_set_header Host $host; }
-}
-```
-
-سپس گواهی رایگان با Certbot:
-```bash
-sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d aramina.example.com -d api.aramina.example.com
-```
-
-> بعد از فعال‌شدن HTTPS، در `.env` مقادیر را به `https://...` تغییر دهید و
-> `docker compose up -d --build frontend` را دوباره اجرا کنید (چون آدرس API در زمان build فرانت جاسازی می‌شود).
 
 ---
 
@@ -131,7 +122,8 @@ cat backup.sql | docker compose exec -T postgres psql -U "$DB_USER" -d "$DB_NAME
 - پورت Postgres (`5432`) در docker-compose از بیرون باز **نیست** (فقط شبکه‌ی داخلی). همین‌طور بماند.
 - فایل `.env` را هرگز commit نکنید (در `.gitignore` هست).
 - در production حتماً `JWT_SIGN_KEY` تصادفی و قوی بگذارید.
-- فایروال VPS: فقط پورت‌های ۲۲ (SSH)، ۸۰ و ۴۴۳ را باز بگذارید و ترافیک اپ را از Nginx عبور دهید.
+- فایروال VPS: فقط پورت‌های ۲۲ (SSH)، ۸۰ و ۴۴۳ را باز بگذارید. پورت‌های 3000 و 8086 از بیرون بسته هستند (Traefik مدیریت می‌کند).
+- فایل `traefik/acme.json` حاوی کلیدهای SSL است — هرگز commit نکنید (در `.gitignore` اضافه کنید).
 
 ---
 

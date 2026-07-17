@@ -1,10 +1,25 @@
 # ============================================================
 # آرامینا — docker-compose برای دیپلوی روی VPS
 # سه سرویس: postgres + backend (Go) + frontend (Next.js)
+# Traefik به عنوان reverse proxy با SSL خودکار (Let's Encrypt)
 # مقادیر حساس از فایل .env در همین پوشه خوانده می‌شوند.
 # ============================================================
 
 services:
+  traefik:
+    image: traefik:v3.2
+    container_name: aramina_traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - ./traefik/acme.json:/letsencrypt/acme.json
+    networks:
+      - aramina_net
+
   postgres:
     image: postgres:15-alpine
     container_name: aramina_postgres
@@ -20,9 +35,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # پورت را فقط اگر لازم داری از بیرون باز کن؛ در حالت پیش‌فرض فقط شبکه‌ی داخلی
-    # ports:
-    #   - "5432:5432"
+    networks:
+      - aramina_net
 
   backend:
     build:
@@ -45,13 +59,17 @@ services:
       JWT_SIGN_KEY: ${JWT_SIGN_KEY}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       MIGRATIONS_DIR: ./migrations
-      # کلید FCM داخل کانتینر (فایل زیر در volumes مونت می‌شود). خالی = push خاموش.
       FCM_CREDENTIALS_FILE: /root/serviceAccountKey.json
-    ports:
-      - "8086:8086"
     volumes:
-      # فایل کلید را قبل از up بگذار: backend/serviceAccountKey.json
       - ./backend/serviceAccountKey.json:/root/serviceAccountKey.json:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.aramina.ir`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8086"
+    networks:
+      - aramina_net
 
   frontend:
     build:
@@ -62,8 +80,18 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-    ports:
-      - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`aramina.ir`) || Host(`www.aramina.ir`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    networks:
+      - aramina_net
 
 volumes:
   postgres_data:
+
+networks:
+  aramina_net:
+    driver: bridge

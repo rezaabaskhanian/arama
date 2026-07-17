@@ -24,6 +24,9 @@ frontend/mental-health-trauma/.vercel/
 frontend/mental-health-trauma/*.tsbuildinfo
 frontend/mental-health-trauma/next-env.d.ts
 
+# --- Traefik ---
+traefik/acme.json
+
 # --- IDE ---
 .idea/
 .vscode/
