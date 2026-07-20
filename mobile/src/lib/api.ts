@@ -10,7 +10,7 @@ import { getItem, multiRemove, setItem, StorageKeys } from './storage';
  * host; the Android emulator must use 10.0.2.2. Override via API_BASE if you run
  * on a device (point it at your machine's LAN IP).
  */
-export const API_BASE = 'http://37.152.186.82:8086';
+export const API_BASE = 'https://api.ariname.ir';
 
 let onUnauthorized: (() => void) | null = null;
 /** Let AuthContext hook in so a 401 anywhere can drop the user back to login. */

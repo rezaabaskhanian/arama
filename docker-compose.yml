@@ -64,7 +64,7 @@ services:
       - ./backend/serviceAccountKey.json:/root/serviceAccountKey.json:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`api.aramina.ir`)"
+      - "traefik.http.routers.backend.rule=Host(`api.ariname.ir`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8086"
@@ -82,7 +82,7 @@ services:
       - backend
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`aramina.ir`) || Host(`www.aramina.ir`)"
+      - "traefik.http.routers.frontend.rule=Host(`ariname.ir`) || Host(`www.ariname.ir`)"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"

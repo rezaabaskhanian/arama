@@ -45,8 +45,8 @@ nano .env
 مقادیر مهم:
 - `DB_PASSWORD` → یک رمز قوی
 - `JWT_SIGN_KEY` → خروجی `openssl rand -hex 32`
-- `ALLOWED_ORIGINS` → `https://aramina.ir`
-- `NEXT_PUBLIC_API_URL` → `https://api.aramina.ir/`
+- `ALLOWED_ORIGINS` → `https://ariname.ir`
+- `NEXT_PUBLIC_API_URL` → `https://api.ariname.ir/`
 
 ---
 
@@ -83,12 +83,12 @@ docker compose up -d --build
 docker compose ps
 docker compose logs -f traefik      # بررسی گرفتن گواهی SSL
 docker compose logs -f backend      # مشاهده‌ی لاگ‌ها
-curl https://api.aramina.ir/health  # باید {"status":"ok"} بدهد
+curl https://api.ariname.ir/health  # باید {"status":"ok"} بدهد
 ```
 
 سرویس‌ها (همه از طریق Traefik):
-- فرانت: `https://aramina.ir`
-- API: `https://api.aramina.ir`
+- فرانت: `https://ariname.ir`
+- API: `https://api.ariname.ir`
 - HTTP به HTTPS redirect می‌شود (خودکار)
 
 ---
